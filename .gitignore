@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+build/
+*.zip
+
+# Environment overrides
+.wp-env.override.json
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

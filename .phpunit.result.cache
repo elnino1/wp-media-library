@@ -1,0 +1,1 @@
+{"version":1,"defects":[],"times":{"WpmfApiTest::test_api_class_exists":0.008,"WpmfApiTest::test_taxonomy_registers_correctly":0.001,"WpmfApiTest::test_taxonomy_attached_to_media":0.002}}
