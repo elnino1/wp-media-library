@@ -1,0 +1,46 @@
+# Build artifacts and dependencies
+node_modules/
+dist/
+build/
+.next/
+out/
+target/
+vendor/
+.venv/
+__pycache__/
+
+# Lock files and package manager artifacts
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+Cargo.lock
+poetry.lock
+
+# Test files (when not actively working on tests)
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+__tests__/
+e2e/
+cypress/
+.pytest_cache/
+
+# Environment and secrets
+.env*
+*.key
+*.pem
+
+# IDE and system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Generated code
+**/*.generated.ts
+**/generated/
+
+# Large data files
+*.csv
+*.json.gz
+*.sql

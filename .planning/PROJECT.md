@@ -40,7 +40,6 @@ Media items are automatically tagged the moment they're organized — zero extra
 
 ## Context
 
-- Architecture doc in `_bmad-output/architecture/plugin-architecture.md`
 - Codebase map in `.planning/codebase/`
 - Tag mapper PHP hook (`set_object_terms`) is commented out — needs implementation
 - `class-wpmf-tag-mapper.php` has the meta registration but the actual hook logic is a stub
