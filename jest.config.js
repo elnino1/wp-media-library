@@ -9,6 +9,10 @@ module.exports = {
 		),
 	},
 	moduleNameMapper: {
+        '\\.(scss|css)$': require.resolve(
+            '@wordpress/jest-preset-default/scripts/style-mock.js'
+        ),
 		'^@wordpress/element$': '<rootDir>/node_modules/react',
 	},
+
 };
