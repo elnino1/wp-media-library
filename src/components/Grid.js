@@ -111,7 +111,7 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh }) => {
 
     const loadItems = async (pageNumber) => {
         setLoading(true);
-        const newItems = await getItems(selectedFolderId || 0, pageNumber);
+        const newItems = await getItems(selectedFolderId, pageNumber);
         if (newItems.length === 0) {
             setHasMore(false);
         } else {
@@ -159,7 +159,11 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh }) => {
             )}
 
             {!loading && !hasMore && items.length === 0 && (
-                <p style={{ color: '#888', marginTop: '20px' }}>No items in this folder. Drag media here or upload.</p>
+                <p style={{ color: '#888', marginTop: '20px' }}>
+                    {selectedFolderId === null
+                        ? 'No unassigned media. All items are organized into folders.'
+                        : 'This folder is empty. Drag media here to organize it.'}
+                </p>
             )}
 
             {!hasMore && items.length > 0 && (

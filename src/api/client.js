@@ -13,16 +13,15 @@ export const createFolder = async (name, parentId = 0) => {
     });
 };
 
-export const getItems = async (folderId = 0, page = 1, perPage = 20) => {
-    // Queries media items with simple pagination parameters
+export const getItems = async (folderId = null, page = 1, perPage = 20) => {
     const queryArgs = {
         per_page: perPage,
         page: page,
+        wpmf_folder: folderId ? folderId : 'inbox',
     };
-    
-    // In the future this will be merged cleanly internally for WooCommerce support
+
     const path = addQueryArgs('/wp/v2/media', queryArgs);
-    
+
     try {
         const response = await apiFetch({ path });
         return response || [];
