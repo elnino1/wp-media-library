@@ -11,7 +11,7 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
 - [x] **Phase 02: Tag Auto-Creation** - New tag names auto-created on Inspector save (MAP-03)
 
 **Remaining:**
-- [ ] **Phase 03: Folder Navigation & Media Filtering** - Sidebar tree works, sub-folders can be created, Inbox shows unassigned media
+- [x] **Phase 03: Folder Navigation & Media Filtering** - Sidebar tree works, sub-folders can be created, Inbox shows unassigned media (completed 2026-03-19)
 - [ ] **Phase 04: Move & Auto-Tag Completion** - Drag-to-folder moves items, tags replace on move, Inspector loads existing mappings, upload opens media uploader
 
 ## Phase Details
@@ -42,7 +42,7 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
   1. User can create a sub-folder under any selected folder and it appears nested in the sidebar tree
   2. Selecting a folder in the sidebar shows only media assigned to that folder in the grid
   3. Selecting the Inbox (root) shows only media with no folder assigned
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 03-01-PLAN.md — Backend folder filter + frontend API wiring for folder-based media display
@@ -67,5 +67,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 01. Inspector Foundation | - | Complete | 2026-03-19 |
 | 02. Tag Auto-Creation | - | Complete | 2026-03-19 |
-| 03. Folder Navigation & Media Filtering | 1/2 | In Progress|  |
+| 03. Folder Navigation & Media Filtering | 2/2 | Complete   | 2026-03-19 |
 | 04. Move & Auto-Tag Completion | 0/TBD | Not started | - |

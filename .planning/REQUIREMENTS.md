@@ -17,7 +17,7 @@
 
 ### Media Display
 
-- [ ] **MEDIA-01**: Inbox (root) shows only media with no folder assigned
+- [x] **MEDIA-01**: Inbox (root) shows only media with no folder assigned
 - [ ] **MEDIA-02**: Upload button opens the WP media uploader
 
 ### Tag Mapping
@@ -57,7 +57,7 @@
 |-------------|-------|--------|
 | FOLD-01 | Phase 03 | Complete |
 | FOLD-02 | Phase 03 | Complete |
-| MEDIA-01 | Phase 03 | Pending |
+| MEDIA-01 | Phase 03 | Complete |
 | MAP-01 | Phase 04 | Pending |
 | MAP-02 | Phase 04 | Pending |
 | MOVE-01 | Phase 04 | Pending |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-19T20:53:14.771Z"
-last_activity: 2026-03-19 — Roadmap created; phases 01 and 02 already complete
+status: Active
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-19T20:54:35.470Z"
+last_activity: "2026-03-19 — Completed 03-01: folder filtering end-to-end wired"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 2
+  completed_plans: 3
   percent: 20
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 03 of 04 (Folder Navigation & Media Filtering)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-19 — Roadmap created; phases 01 and 02 already complete
+Plan: 03-01 complete (03-02 already complete from prior session)
+Status: Active
+Last activity: 2026-03-19 — Completed 03-01: folder filtering end-to-end wired
 
 Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 
@@ -49,6 +49,7 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 
 *Updated after each plan completion*
 | Phase 03 P02 | 1 min | 1 tasks | 1 files |
+| Phase 03 P01 | 1 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -59,10 +60,13 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 - [Phase 02]: `Promise.allSettled` used so partial tag creation failures don't block save
 - [Phase 02]: Term meta keys: `wpmf_mapped_post_tags` (tag IDs), `wpmf_mapped_product_cats` (category IDs)
 - [Phase 03]: collapsedIds starts as empty Set so all folders are expanded by default on page load — Ensures default UX requirement is met without extra logic
+- [Phase 03-01]: rest_attachment_query filter used instead of custom endpoint — minimal architecture, leverages WP_Query tax_query natively
+- [Phase 03-01]: 'inbox' string literal used as wpmf_folder param value for unassigned media — unambiguous vs numeric folder IDs
+- [Phase 03-01]: folderId=null sentinel for inbox; getItems maps null to 'inbox', positive int to folder ID
 
 ### Blockers/Concerns
 
-- [Phase 03]: `getItems()` in `src/api/client.js` ignores `folderId` — grid always shows ALL media. Must fix before folder filtering works.
+- ~~[Phase 03]: `getItems()` in `src/api/client.js` ignores `folderId`~~ — RESOLVED in 03-01
 - [Phase 03]: `buildTree()` has no defensive checks for malformed API data — fragile.
 - [Phase 04]: `class-wpmf-tag-mapper.php` has `map_folder_tags()` hook commented out — tag-on-move not wired.
 - [Phase 04]: Move endpoint (`POST /wpmf/v1/move`) exists but does not call tag mapper after moving.
@@ -73,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:53:09.966Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-19T20:53:30Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

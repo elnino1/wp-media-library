@@ -8,7 +8,8 @@
 - WordPress built-in REST API - Used for all communication between React frontend and PHP backend
   - SDK/Client: `@wordpress/api-fetch`
   - Endpoints used:
-    - `/wp/v2/media` - Retrieve WordPress media library items (GET)
+    - `/wp/v2/media?wpmf_folder=inbox` - Retrieve unassigned media items (GET)
+    - `/wp/v2/media?wpmf_folder={id}` - Retrieve media assigned to a specific folder (GET)
     - `/wp/v2/wpmf_folders` - Retrieve virtual folders taxonomy terms (GET)
     - `/wpmf/v1/move` - Custom endpoint to move items between folders (POST)
 
@@ -130,7 +131,7 @@
 - `init` - Taxonomy registration
 
 **Filters Used:**
-- None detected in core plugin code
+- `rest_attachment_query` - Intercepts /wp/v2/media REST query args to inject tax_query for folder-based filtering (WPMF_Taxonomy::filter_media_by_folder)
 
 **Custom Endpoints:**
 - Location: `includes/class-wpmf-api.php`

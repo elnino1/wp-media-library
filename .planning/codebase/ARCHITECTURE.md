@@ -76,11 +76,15 @@
 
 1. Grid component watches `selectedFolderId` and `refreshKey` dependencies
 2. On change, resets pagination state and loads page 1
-3. Calls `getItems(folderId, page, perPage)`
-4. Uses WordPress REST `/wp/v2/media` endpoint with pagination
-5. Returns array of media items with metadata (thumbnails, title, media_type)
-6. `MediaItem` component renders each with drag handle and thumbnail
-7. Pagination: "Load More Items" button increments page and appends results
+3. Calls `getItems(selectedFolderId, page, perPage)` — null maps to inbox, positive int to folder
+4. API client adds `wpmf_folder=inbox` (if null) or `wpmf_folder={id}` (if folder selected) to query args
+5. WordPress `rest_attachment_query` filter intercepts request and injects `tax_query`:
+   - `inbox`: NOT EXISTS operator (media with no wp_virtual_folder term)
+   - Folder ID: term_id match on specific folder term
+6. Returns filtered array of media items with metadata (thumbnails, title, media_type)
+7. `MediaItem` component renders each with drag handle and thumbnail
+8. Empty state shows contextual message: inbox vs folder
+9. Pagination: "Load More Items" button increments page and appends results
 
 **Tag Mapping (Inspector):**
 
