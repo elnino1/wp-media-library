@@ -22,8 +22,8 @@
 
 ### Tag Mapping
 
-- [ ] **MAP-01**: User can set which WP tags a folder maps to via the Inspector panel
-- [ ] **MAP-02**: Inspector shows the folder's existing tag mappings when a folder is selected
+- [x] **MAP-01**: User can set which WP tags a folder maps to via the Inspector panel
+- [x] **MAP-02**: Inspector shows the folder's existing tag mappings when a folder is selected
 - ✓ **MAP-03**: New tag names are created automatically when typed — *complete (phase 02)*
 
 ## v2 Requirements
@@ -58,8 +58,8 @@
 | FOLD-01 | Phase 03 | Complete |
 | FOLD-02 | Phase 03 | Complete |
 | MEDIA-01 | Phase 03 | Complete |
-| MAP-01 | Phase 04 | Pending |
-| MAP-02 | Phase 04 | Pending |
+| MAP-01 | Phase 04 | Complete |
+| MAP-02 | Phase 04 | Complete |
 | MOVE-01 | Phase 04 | Pending |
 | MOVE-02 | Phase 04 | Pending |
 | MEDIA-02 | Phase 04 | Pending |

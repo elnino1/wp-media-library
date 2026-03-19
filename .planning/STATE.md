@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Active
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-19T20:54:35.470Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-19T22:08:29.093Z"
 last_activity: "2026-03-19 — Completed 03-01: folder filtering end-to-end wired"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 5
   percent: 20
 ---
 
@@ -50,6 +50,8 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 *Updated after each plan completion*
 | Phase 03 P02 | 1 min | 1 tasks | 1 files |
 | Phase 03 P01 | 1 min | 2 tasks | 3 files |
+| Phase 04-move-auto-tag-completion P02 | 1min | 1 tasks | 1 files |
+| Phase 04 P01 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -63,6 +65,7 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 - [Phase 03-01]: rest_attachment_query filter used instead of custom endpoint — minimal architecture, leverages WP_Query tax_query natively
 - [Phase 03-01]: 'inbox' string literal used as wpmf_folder param value for unassigned media — unambiguous vs numeric folder IDs
 - [Phase 03-01]: folderId=null sentinel for inbox; getItems maps null to 'inbox', positive int to folder ID
+- [Phase 04]: Only call setTermCache when Promise.allSettled has fulfilled results to avoid spurious useEffect([folderId, termCache]) re-trigger clearing saveStatus
 
 ### Blockers/Concerns
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:53:30Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-19T22:08:18.027Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
