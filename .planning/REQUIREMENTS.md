@@ -12,13 +12,13 @@
 
 ### Moving Items
 
-- [ ] **MOVE-01**: User can drag a media item and drop it onto a folder to move it
-- [ ] **MOVE-02**: When an item is moved to a folder, the folder's mapped WP tags replace the item's existing tags
+- [x] **MOVE-01**: User can drag a media item and drop it onto a folder to move it
+- [x] **MOVE-02**: When an item is moved to a folder, the folder's mapped WP tags replace the item's existing tags
 
 ### Media Display
 
 - [x] **MEDIA-01**: Inbox (root) shows only media with no folder assigned
-- [ ] **MEDIA-02**: Upload button opens the WP media uploader
+- [x] **MEDIA-02**: Upload button opens the WP media uploader
 
 ### Tag Mapping
 
@@ -60,9 +60,9 @@
 | MEDIA-01 | Phase 03 | Complete |
 | MAP-01 | Phase 04 | Complete |
 | MAP-02 | Phase 04 | Complete |
-| MOVE-01 | Phase 04 | Pending |
-| MOVE-02 | Phase 04 | Pending |
-| MEDIA-02 | Phase 04 | Pending |
+| MOVE-01 | Phase 04 | Complete |
+| MOVE-02 | Phase 04 | Complete |
+| MEDIA-02 | Phase 04 | Complete |
 | MAP-03 | Phase 02 | Complete |
 
 **Coverage:**

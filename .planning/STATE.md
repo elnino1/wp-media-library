@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Active
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-19T22:08:29.093Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-19T22:08:37.782Z"
 last_activity: "2026-03-19 — Completed 03-01: folder filtering end-to-end wired"
 progress:
   total_phases: 4
@@ -66,6 +66,9 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 - [Phase 03-01]: 'inbox' string literal used as wpmf_folder param value for unassigned media — unambiguous vs numeric folder IDs
 - [Phase 03-01]: folderId=null sentinel for inbox; getItems maps null to 'inbox', positive int to folder ID
 - [Phase 04]: Only call setTermCache when Promise.allSettled has fulfilled results to avoid spurious useEffect([folderId, termCache]) re-trigger clearing saveStatus
+- [Phase 04]: Direct call over hook: WPMF_Tag_Mapper::apply_tags_for_folder called directly from move_items to prevent recursion
+- [Phase 04]: folder_id > 0 guard: moving to inbox skips tag mapper so inbox moves do not clear tags
+- [Phase 04]: media-views handle (not wp-media): correct WP core script handle for loading window.wp.media
 
 ### Blockers/Concerns
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:08:18.027Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-03-19T22:08:37.779Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
