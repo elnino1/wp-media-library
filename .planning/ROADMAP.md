@@ -42,7 +42,11 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
   1. User can create a sub-folder under any selected folder and it appears nested in the sidebar tree
   2. Selecting a folder in the sidebar shows only media assigned to that folder in the grid
   3. Selecting the Inbox (root) shows only media with no folder assigned
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Backend folder filter + frontend API wiring for folder-based media display
+- [ ] 03-02-PLAN.md — Sidebar collapse/expand tree, defensive buildTree, sub-folder creation polish
 
 ### Phase 04: Move & Auto-Tag Completion
 **Goal**: Users can drag media into a folder and the folder's mapped tags are automatically applied — the core value delivered end-to-end
@@ -63,5 +67,5 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
 |-------|----------------|--------|-----------|
 | 01. Inspector Foundation | - | Complete | 2026-03-19 |
 | 02. Tag Auto-Creation | - | Complete | 2026-03-19 |
-| 03. Folder Navigation & Media Filtering | 0/TBD | Not started | - |
+| 03. Folder Navigation & Media Filtering | 0/2 | Planning complete | - |
 | 04. Move & Auto-Tag Completion | 0/TBD | Not started | - |
