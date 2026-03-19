@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Active
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-19T22:08:37.782Z"
-last_activity: "2026-03-19 — Completed 03-01: folder filtering end-to-end wired"
+stopped_at: Completed Phase 04 — all plans done
+last_updated: "2026-03-19T22:30:00.000Z"
+last_activity: "2026-03-19 — Completed Phase 04: tag-on-move, media-views, Inspector race condition fix"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 5
-  percent: 20
+  completed_phases: 4
+  total_plans: 8
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Media items are automatically tagged the moment they are organized — zero extra steps for the user.
-**Current focus:** Phase 03 — Folder Navigation & Media Filtering
+**Current focus:** Milestone v1.0 complete — all 4 phases done
 
 ## Current Position
 
-Phase: 03 of 04 (Folder Navigation & Media Filtering)
-Plan: 03-01 complete (03-02 already complete from prior session)
-Status: Active
-Last activity: 2026-03-19 — Completed 03-01: folder filtering end-to-end wired
+Phase: 04 of 04 COMPLETE
+Status: All phases done — ready for /gsd:verify-work
+Last activity: 2026-03-19 — Completed Phase 04: tag-on-move backend, Inspector race condition fix, media-views enqueue
 
-Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
+Progress: [██████████] 100% (4 of 4 phases done)
 
 ## Performance Metrics
 
@@ -74,8 +73,8 @@ Progress: [██░░░░░░░░] 20% (2 of ~4 phases done, plans TBD)
 
 - ~~[Phase 03]: `getItems()` in `src/api/client.js` ignores `folderId`~~ — RESOLVED in 03-01
 - [Phase 03]: `buildTree()` has no defensive checks for malformed API data — fragile.
-- [Phase 04]: `class-wpmf-tag-mapper.php` has `map_folder_tags()` hook commented out — tag-on-move not wired.
-- [Phase 04]: Move endpoint (`POST /wpmf/v1/move`) exists but does not call tag mapper after moving.
+- ~~[Phase 04]: `class-wpmf-tag-mapper.php` has `map_folder_tags()` hook commented out~~ — RESOLVED in 04-01
+- ~~[Phase 04]: Move endpoint does not call tag mapper~~ — RESOLVED in 04-01
 
 ### Pending Todos
 
@@ -83,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:08:37.779Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-19T22:30:00.000Z
+Stopped at: Phase 04 complete — both plans executed, all tests green
 Resume file: None
