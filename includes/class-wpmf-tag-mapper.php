@@ -5,9 +5,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WPMF_Tag_Mapper {
 	public static function init() {
-		// Hook when object terms are set to automatically map tags
-		// add_action('set_object_terms', array(__CLASS__, 'map_folder_tags'), 10, 6);
-        
         // Register term meta for storing mapped taxonomy strings
         add_action('init', array(__CLASS__, 'register_meta'));
 	}
@@ -42,5 +39,12 @@ class WPMF_Tag_Mapper {
         ) );
     }
 
-    // Advanced tagging logic to be implemented here in next step
+    public static function apply_tags_for_folder( int $item_id, int $folder_id ): void {
+        $tag_ids = get_term_meta( $folder_id, 'wpmf_mapped_post_tags', true );
+        if ( ! is_array( $tag_ids ) || empty( $tag_ids ) ) {
+            return;
+        }
+        // append=false replaces existing tags (MOVE-02 requires replacement, not append)
+        wp_set_object_terms( $item_id, $tag_ids, 'post_tag', false );
+    }
 }
