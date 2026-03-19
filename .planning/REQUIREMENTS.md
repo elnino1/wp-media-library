@@ -24,7 +24,7 @@
 
 - [ ] **MAP-01**: User can set which WP tags a folder maps to via the Inspector panel
 - [ ] **MAP-02**: Inspector shows the folder's existing tag mappings when a folder is selected
-- ✓ **MAP-03**: New tag names are created automatically when typed — *complete (phase 2)*
+- ✓ **MAP-03**: New tag names are created automatically when typed — *complete (phase 02)*
 
 ## v2 Requirements
 
@@ -55,21 +55,21 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOLD-01 | Phase 1 | Pending |
-| FOLD-02 | Phase 1 | Pending |
-| MOVE-01 | Phase 1 | Pending |
-| MEDIA-01 | Phase 1 | Pending |
-| MEDIA-02 | Phase 1 | Pending |
-| MAP-01 | Phase 2 | Pending |
-| MAP-02 | Phase 2 | Pending |
-| MAP-03 | Phase 2 | Complete |
-| MOVE-02 | Phase 3 | Pending |
+| FOLD-01 | Phase 03 | Pending |
+| FOLD-02 | Phase 03 | Pending |
+| MEDIA-01 | Phase 03 | Pending |
+| MAP-01 | Phase 04 | Pending |
+| MAP-02 | Phase 04 | Pending |
+| MOVE-01 | Phase 04 | Pending |
+| MOVE-02 | Phase 04 | Pending |
+| MEDIA-02 | Phase 04 | Pending |
+| MAP-03 | Phase 02 | Complete |
 
 **Coverage:**
 - v1 requirements: 9 total (8 pending + 1 complete)
 - Mapped to phases: 9
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 — traceability updated after roadmap creation (phases 03-04)*
