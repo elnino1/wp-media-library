@@ -42,7 +42,7 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
   1. User can create a sub-folder under any selected folder and it appears nested in the sidebar tree
   2. Selecting a folder in the sidebar shows only media assigned to that folder in the grid
   3. Selecting the Inbox (root) shows only media with no folder assigned
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — Backend folder filter + frontend API wiring for folder-based media display
@@ -67,5 +67,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 01. Inspector Foundation | - | Complete | 2026-03-19 |
 | 02. Tag Auto-Creation | - | Complete | 2026-03-19 |
-| 03. Folder Navigation & Media Filtering | 0/2 | Planning complete | - |
+| 03. Folder Navigation & Media Filtering | 1/2 | In Progress|  |
 | 04. Move & Auto-Tag Completion | 0/TBD | Not started | - |

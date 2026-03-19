@@ -7,8 +7,8 @@
 
 ### Folders
 
-- [ ] **FOLD-01**: User can create a sub-folder under the currently selected folder
-- [ ] **FOLD-02**: User sees folders in a hierarchical sidebar tree (breadcrumb-navigable)
+- [x] **FOLD-01**: User can create a sub-folder under the currently selected folder
+- [x] **FOLD-02**: User sees folders in a hierarchical sidebar tree (breadcrumb-navigable)
 
 ### Moving Items
 
@@ -55,8 +55,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOLD-01 | Phase 03 | Pending |
-| FOLD-02 | Phase 03 | Pending |
+| FOLD-01 | Phase 03 | Complete |
+| FOLD-02 | Phase 03 | Complete |
 | MEDIA-01 | Phase 03 | Pending |
 | MAP-01 | Phase 04 | Pending |
 | MAP-02 | Phase 04 | Pending |
