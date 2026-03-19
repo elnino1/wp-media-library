@@ -45,8 +45,8 @@ This is a brownfield project. Phases 01 and 02 are already complete. Phases 03-0
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md — Backend folder filter + frontend API wiring for folder-based media display
-- [ ] 03-02-PLAN.md — Sidebar collapse/expand tree, defensive buildTree, sub-folder creation polish
+- [x] 03-01-PLAN.md — Backend folder filter + frontend API wiring for folder-based media display
+- [x] 03-02-PLAN.md — Sidebar collapse/expand tree, defensive buildTree, sub-folder creation polish
 
 ### Phase 04: Move & Auto-Tag Completion
 **Goal**: Users can drag media into a folder and the folder's mapped tags are automatically applied — the core value delivered end-to-end
@@ -57,15 +57,19 @@ Plans:
   2. After a move, the item's WP tags match exactly the tags the folder is mapped to (replacing any previous tags)
   3. Opening the Inspector for a folder shows the tag mappings previously saved for that folder
   4. Clicking the upload button opens the WordPress media uploader
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — PHP backend: tag mapper implementation, move endpoint wiring, wp-media enqueue
+- [ ] 04-02-PLAN.md — Inspector race condition fix for save status persistence
 
 ## Progress
 
-**Execution Order:** 03 → 04
+**Execution Order:** 03 -> 04
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 01. Inspector Foundation | - | Complete | 2026-03-19 |
 | 02. Tag Auto-Creation | - | Complete | 2026-03-19 |
 | 03. Folder Navigation & Media Filtering | 2/2 | Complete   | 2026-03-19 |
-| 04. Move & Auto-Tag Completion | 0/TBD | Not started | - |
+| 04. Move & Auto-Tag Completion | 0/2 | Not started | - |
