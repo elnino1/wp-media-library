@@ -1,0 +1,43 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
+
+      - name: Package Plugin
+        run: |
+          npm ci
+          npm run package
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(grep -i "Version:" wp-media-folders.php | awk -F' ' '{print $NF}' | tr -d '\r')
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: WP Media Folders ${{ steps.version.outputs.version }}
+          files: wp-media-folders.zip
+          generate_release_notes: true
