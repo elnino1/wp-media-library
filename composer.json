@@ -1,6 +1,6 @@
 {
-  "name": "wpmf/wp-media-folders",
-  "description": "WordPress Media Folders",
+  "name": "wpmlib/wp-media-library",
+  "description": "WP Media Library",
   "require-dev": {
     "yoast/phpunit-polyfills": "^2.0",
     "phpunit/phpunit": "^9.6"

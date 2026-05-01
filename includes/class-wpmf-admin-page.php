@@ -11,10 +11,10 @@ class WPMF_Admin_Page {
 
 	public static function add_admin_menu() {
 		add_menu_page(
-			__( 'Media Folders', 'wp-media-folders' ),
-			__( 'Media Folders', 'wp-media-folders' ),
+			__( 'Media Library', 'wp-media-library' ),
+			__( 'Media Library', 'wp-media-library' ),
 			'upload_files',
-			'wp-media-folders',
+			'wp-media-library',
 			array( __CLASS__, 'render_app' ),
 			'dashicons-portfolio',
 			10
@@ -26,7 +26,7 @@ class WPMF_Admin_Page {
 	}
 
 	public static function enqueue_scripts( $hook ) {
-		if ( 'toplevel_page_wp-media-folders' !== $hook ) {
+		if ( 'toplevel_page_wp-media-library' !== $hook ) {
 			return;
 		}
 
