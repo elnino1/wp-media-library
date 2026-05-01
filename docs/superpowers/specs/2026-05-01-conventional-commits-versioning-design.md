@@ -5,81 +5,75 @@
 
 ## Goal
 
-Automate version bumps and GitHub releases for the `wp-media-folders` plugin based on conventional commit messages, using a PR-based release model (release-please).
+Automate version bumps and GitHub releases for the `wp-media-folders` plugin based on conventional commit messages. Version is computed at release time — never committed to the repo.
 
 ## Approach
 
-**release-please (PR-based).** Conventional commits accumulate in an auto-generated Release PR. The developer controls when to ship by merging that PR. On merge, release-please creates the GitHub release and tag; a second workflow job builds and uploads `wp-media-folders.zip`.
+On every push to `main`, the workflow reads conventional commits since the last tag, computes a semver bump, injects the version into the source in memory, packages the plugin, and publishes a GitHub release. No Release PRs, no version config files.
 
-## New Files
+## Source Change
 
-### `release-please-config.json`
+`wp-media-folders.php` uses the literal string `VERSION` as a placeholder in both locations:
 
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "simple",
-  "packages": {
-    ".": {
-      "changelog-path": "CHANGELOG.md",
-      "extra-files": [
-        { "type": "generic", "path": "wp-media-folders.php" }
-      ]
-    }
-  }
-}
+```php
+ * Version:           VERSION
 ```
 
-The `generic` updater scans `wp-media-folders.php` for the current version string and replaces all occurrences — covering both the plugin header (`Version: 1.0.0`) and the PHP constant (`define('WPMF_VERSION', '1.0.0')`).
-
-### `.release-please-manifest.json`
-
-```json
-{ ".": "1.0.0" }
+```php
+define( 'WPMF_VERSION', 'VERSION' );
 ```
 
-Tracks the current released version. release-please updates this on each release.
+The working tree is patched via `sed` during the workflow before packaging. The placeholder is never replaced in the committed source.
 
-## Updated Workflow: `release.yml`
+## Workflow: `release.yml`
 
-Two jobs replace the current single job.
+Single job, runs on every push to `main`.
 
-### Job 1 — `release-please`
+### Steps
 
-- Triggers on every push to `main` (no `paths-ignore`)
-- Calls `googleapis/release-please-action@v4`
-- Creates or updates the Release PR when unreleased conventional commits exist
-- Outputs `release_created` and `tag_name` when a Release PR merge is detected
+**1. Determine last version**
+```bash
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+LAST_VERSION=${LAST_TAG#v}   # fallback: 1.0.0 if no tags exist
+```
 
-Permissions required: `contents: write`, `pull-requests: write`
+**2. Read commits since last tag and determine bump**
 
-### Job 2 — `build-and-upload`
-
-- Depends on job 1; runs only when `release_created == true`
-- Checks out the repo at the new tag
-- Runs `npm ci && npm run package`
-- Uploads `wp-media-folders.zip` to the GitHub release via `gh release upload`
-
-## Version Bump Rules
-
-| Commit type | Bump |
+| Condition | Bump |
 |---|---|
-| `fix:` | patch — `1.0.0 → 1.0.1` |
-| `feat:` | minor — `1.0.0 → 1.1.0` |
-| `feat!:` or `BREAKING CHANGE:` in footer | major — `1.0.0 → 2.0.0` |
-| `chore:`, `docs:`, `refactor:`, `ci:`, `test:` | no release |
+| Any commit matches `feat!:` or contains `BREAKING CHANGE:` | major |
+| Any commit matches `feat:` | minor |
+| Everything else (including `fix:`, `chore:`, `docs:`, `ci:`) | patch |
 
-## Day-to-Day Flow
+**3. Compute new version**
+Split `LAST_VERSION` into `MAJOR.MINOR.PATCH`, apply bump, reset lower components (e.g. minor bump → `PATCH=0`).
 
-1. Push conventional commits to `main` as normal
-2. release-please opens/updates a Release PR (e.g. `chore(main): release 1.1.0`) that bumps `wp-media-folders.php`, `.release-please-manifest.json`, and `CHANGELOG.md`
-3. When ready to ship, merge the Release PR
-4. release-please creates the GitHub release and tag; the build job uploads `wp-media-folders.zip` automatically
+**4. Inject version into source (no commit)**
+```bash
+sed -i "s/Version:           VERSION/Version:           $NEW_VERSION/" wp-media-folders.php
+sed -i "s/define( 'WPMF_VERSION', 'VERSION' )/define( 'WPMF_VERSION', '$NEW_VERSION' )/" wp-media-folders.php
+```
+
+**5. Build and package**
+```bash
+npm ci
+npm run package   # produces wp-media-folders.zip
+```
+
+**6. Tag and release**
+```bash
+git tag "v$NEW_VERSION"
+git push origin "v$NEW_VERSION"
+gh release create "v$NEW_VERSION" wp-media-folders.zip --generate-notes
+```
+
+### Permissions
+
+`contents: write` (push tag, create release).
 
 ## Files Changed
 
 | File | Action |
 |---|---|
-| `release-please-config.json` | Create |
-| `.release-please-manifest.json` | Create |
-| `.github/workflows/release.yml` | Rewrite |
+| `wp-media-folders.php` | Replace both version strings with `VERSION` placeholder |
+| `.github/workflows/release.yml` | Rewrite with version-bump logic |
