@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
-      - '.github/**'
 
 jobs:
   release:
@@ -16,28 +13,65 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: version
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            LAST_VERSION="1.0.0"
+          else
+            LAST_VERSION="${LAST_TAG#v}"
+          fi
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s%n%b")
+          else
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s%n%b")
+          fi
+
+          BUMP="patch"
+          if echo "$COMMITS" | grep -qE "^.+(\(.+\))?!:|BREAKING CHANGE:"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            BUMP="minor"
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LAST_VERSION"
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+          esac
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Inject Version into Source
+        run: |
+          sed -i "s/Version:           VERSION/Version:           ${{ steps.version.outputs.new_version }}/" wp-media-folders.php
+          sed -i "s/define( 'WPMF_VERSION', 'VERSION' )/define( 'WPMF_VERSION', '${{ steps.version.outputs.new_version }}' )/" wp-media-folders.php
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: '20'
 
       - name: Package Plugin
         run: |
           npm ci
           npm run package
 
-      - name: Get Version
-        id: version
+      - name: Tag and Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(grep -i "Version:" wp-media-folders.php | awk -F' ' '{print $NF}' | tr -d '\r')
-          echo "version=v$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: WP Media Folders ${{ steps.version.outputs.version }}
-          files: wp-media-folders.zip
-          generate_release_notes: true
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          gh release create "${{ steps.version.outputs.tag }}" wp-media-folders.zip \
+            --title "WP Media Folders ${{ steps.version.outputs.tag }}" \
+            --generate-notes
