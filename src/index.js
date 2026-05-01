@@ -1,12 +1,13 @@
 import { render, useState, useCallback } from '@wordpress/element';
 import Sidebar from './components/Sidebar';
 import Grid from './components/Grid';
+import Inspector from './components/Inspector';
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { moveItems } from './api/client';
 
 import './style.scss';
 
-const App = () => {
+export const App = () => {
     // Which folder is currently selected in the sidebar (null = Root/Inbox)
     const [selectedFolderId, setSelectedFolderId] = useState(null);
     // Increment this to force the Grid to reload
@@ -41,6 +42,7 @@ const App = () => {
                     refreshKey={gridRefreshKey}
                     onRefresh={refreshGrid}
                 />
+                <Inspector folderId={selectedFolderId} />
             </div>
         </DndContext>
     );

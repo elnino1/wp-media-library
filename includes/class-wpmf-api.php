@@ -63,6 +63,10 @@ class WPMF_API {
             if ( is_wp_error( $status ) ) {
                 $results[] = array( 'id' => $item_id, 'status' => 'error', 'message' => $status->get_error_message() );
             } else {
+                // Apply folder's mapped tags after successful move (MOVE-02)
+                if ( $folder_id > 0 ) {
+                    WPMF_Tag_Mapper::apply_tags_for_folder( $item_id, $folder_id );
+                }
                 $results[] = array( 'id' => $item_id, 'status' => 'success' );
             }
         }

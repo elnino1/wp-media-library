@@ -6,6 +6,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPMF_Taxonomy {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_virtual_folder_taxonomy' ) );
+		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_fields' ) );
+	}
+
+	public static function register_rest_fields() {
+		add_filter( 'rest_attachment_query', array( __CLASS__, 'filter_media_by_folder' ), 10, 2 );
+	}
+
+	public static function filter_media_by_folder( $args, $request ) {
+		$wpmf_folder = $request->get_param( 'wpmf_folder' );
+
+		if ( null === $wpmf_folder ) {
+			return $args;
+		}
+
+		if ( 'inbox' === $wpmf_folder ) {
+			$args['tax_query'] = array(
+				array(
+					'taxonomy' => 'wp_virtual_folder',
+					'operator' => 'NOT EXISTS',
+				),
+			);
+		} elseif ( is_numeric( $wpmf_folder ) ) {
+			$args['tax_query'] = array(
+				array(
+					'taxonomy' => 'wp_virtual_folder',
+					'field'    => 'term_id',
+					'terms'    => array( absint( $wpmf_folder ) ),
+				),
+			);
+		}
+
+		return $args;
 	}
 
 	public static function register_virtual_folder_taxonomy() {

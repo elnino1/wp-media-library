@@ -33,10 +33,11 @@ class WPMF_Admin_Page {
 		$asset_file = WPMF_PLUGIN_DIR . 'build/index.asset.php';
 		if ( file_exists( $asset_file ) ) {
 			$assets = require $asset_file;
+			$deps = array_merge( $assets['dependencies'], array( 'media-views' ) );
 			wp_enqueue_script(
 				'wpmf-app-js',
 				WPMF_PLUGIN_URL . 'build/index.js',
-				$assets['dependencies'],
+				$deps,
 				$assets['version'],
 				true
 			);
