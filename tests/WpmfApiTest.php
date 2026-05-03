@@ -1,6 +1,12 @@
 <?php
 class WpmfApiTest extends WP_UnitTestCase {
-	
+
+	public function setUp(): void {
+		parent::setUp();
+		// Ensure the init hook fires so that action handlers register themselves
+		do_action( 'init' );
+	}
+
 	public function test_api_class_exists() {
 		$this->assertTrue( class_exists( 'WPMF_API' ) );
 	}

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPMF_Taxonomy {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_virtual_folder_taxonomy' ) );
-		add_action( 'init', array( __CLASS__, 'register_folder_order_meta' ) );
+		add_action( 'init', array( __CLASS__, 'register_folder_order_meta' ), 11 );
 		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_fields' ) );
 	}
 
