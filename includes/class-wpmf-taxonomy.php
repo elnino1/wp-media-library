@@ -42,17 +42,17 @@ class WPMF_Taxonomy {
 
 	public static function register_virtual_folder_taxonomy() {
 		$labels = array(
-			'name'              => _x( 'Virtual Folders', 'taxonomy general name', 'wp-media-folders' ),
-			'singular_name'     => _x( 'Virtual Folder', 'taxonomy singular name', 'wp-media-folders' ),
-			'search_items'      => __( 'Search Folders', 'wp-media-folders' ),
-			'all_items'         => __( 'All Folders', 'wp-media-folders' ),
-			'parent_item'       => __( 'Parent Folder', 'wp-media-folders' ),
-			'parent_item_colon' => __( 'Parent Folder:', 'wp-media-folders' ),
-			'edit_item'         => __( 'Edit Folder', 'wp-media-folders' ),
-			'update_item'       => __( 'Update Folder', 'wp-media-folders' ),
-			'add_new_item'      => __( 'Add New Folder', 'wp-media-folders' ),
-			'new_item_name'     => __( 'New Folder Name', 'wp-media-folders' ),
-			'menu_name'         => __( 'Virtual Folders', 'wp-media-folders' ),
+			'name'              => _x( 'Virtual Folders', 'taxonomy general name', 'wp-media-library' ),
+			'singular_name'     => _x( 'Virtual Folder', 'taxonomy singular name', 'wp-media-library' ),
+			'search_items'      => __( 'Search Folders', 'wp-media-library' ),
+			'all_items'         => __( 'All Folders', 'wp-media-library' ),
+			'parent_item'       => __( 'Parent Folder', 'wp-media-library' ),
+			'parent_item_colon' => __( 'Parent Folder:', 'wp-media-library' ),
+			'edit_item'         => __( 'Edit Folder', 'wp-media-library' ),
+			'update_item'       => __( 'Update Folder', 'wp-media-library' ),
+			'add_new_item'      => __( 'Add New Folder', 'wp-media-library' ),
+			'new_item_name'     => __( 'New Folder Name', 'wp-media-library' ),
+			'menu_name'         => __( 'Virtual Folders', 'wp-media-library' ),
 		);
 
 		$args = array(

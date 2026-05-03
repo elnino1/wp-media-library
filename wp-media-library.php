@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       WP Media Folders
+ * Plugin Name:       WP Media Library
  * Plugin URI:        https://example.com/
  * Description:       A desktop-class visual drag-and-drop workspace for WordPress Media and WooCommerce Products using non-destructive virtual folders.
  * Version:           VERSION
  * Author:            David Lenir
  * License:           GPL-2.0+
- * Text Domain:       wp-media-folders
+ * Text Domain:       wp-media-library
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

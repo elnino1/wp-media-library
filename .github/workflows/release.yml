@@ -90,6 +90,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
-          gh release create "${{ steps.version.outputs.tag }}" wp-media-folders.zip \
-            --title "WP Media Folders ${{ steps.version.outputs.tag }}" \
+          gh release create "${{ steps.version.outputs.tag }}" wp-media-library.zip \
+            --title "WP Media Library ${{ steps.version.outputs.tag }}" \
             --generate-notes
