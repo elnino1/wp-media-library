@@ -66,8 +66,8 @@ jobs:
       - name: Inject Version into Source
         if: steps.version.outputs.skip != 'true'
         run: |
-          sed -i "s/Version:           VERSION/Version:           ${{ steps.version.outputs.new_version }}/" wp-media-folders.php
-          sed -i "s/define( 'WPMF_VERSION', 'VERSION' )/define( 'WPMF_VERSION', '${{ steps.version.outputs.new_version }}' )/" wp-media-folders.php
+          sed -i "s/Version:           VERSION/Version:           ${{ steps.version.outputs.new_version }}/" wp-media-library.php
+          sed -i "s/define( 'WPMF_VERSION', 'VERSION' )/define( 'WPMF_VERSION', '${{ steps.version.outputs.new_version }}' )/" wp-media-library.php
 
       - name: Setup Node
         if: steps.version.outputs.skip != 'true'
