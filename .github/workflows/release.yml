@@ -79,6 +79,7 @@ jobs:
         if: steps.version.outputs.skip != 'true'
         run: |
           npm ci
+          npm run build
           npm run package
 
       - name: Tag and Release
