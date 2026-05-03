@@ -1,0 +1,13 @@
+.distignore
+.github
+.gitignore
+node_modules
+src
+tests
+composer.json
+composer.lock
+jest.config.js
+package.json
+package-lock.json
+phpunit.xml.dist
+README.md
