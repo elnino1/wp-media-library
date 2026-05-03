@@ -13,4 +13,14 @@ class WpmfApiTest extends WP_UnitTestCase {
 		$tax_object = get_taxonomy( 'wp_virtual_folder' );
 		$this->assertContains( 'attachment', $tax_object->object_type, 'Virtual folders should connect to attachments.' );
 	}
+
+	public function test_folder_order_meta_is_registered() {
+		$registered = get_registered_meta_keys( 'term', 'wp_virtual_folder' );
+		$this->assertArrayHasKey( 'wpmf_folder_order', $registered );
+	}
+
+	public function test_folder_order_meta_is_integer_type() {
+		$registered = get_registered_meta_keys( 'term', 'wp_virtual_folder' );
+		$this->assertEquals( 'integer', $registered['wpmf_folder_order']['type'] );
+	}
 }
