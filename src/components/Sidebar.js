@@ -1,53 +1,104 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { useDroppable } from '@dnd-kit/core';
-import { getFolders, createFolder } from '../api/client';
+import { getFolders, createFolder, deleteFolder } from '../api/client';
 
 // A single droppable folder row
-const FolderItem = ({ folder, depth, isSelected, onSelect, hasChildren, isCollapsed, onToggle }) => {
+const FolderItem = ({
+    folder, depth, isSelected, onSelect, hasChildren, isCollapsed, onToggle,
+    onDeleteRequest, showConfirm, onConfirmDelete, onCancelDelete, deleting,
+}) => {
     const { setNodeRef, isOver } = useDroppable({ id: folder.id });
 
     return (
-        <li
-            ref={setNodeRef}
-            style={{
-                padding: '6px 8px 6px ' + (12 + depth * 16) + 'px',
-                cursor: 'pointer',
-                borderRadius: '3px',
-                fontWeight: isSelected ? '600' : 'normal',
-                background: isOver
-                    ? '#e8f4fb'
-                    : isSelected
-                    ? '#f0f6fc'
-                    : 'transparent',
-                border: isOver ? '1px dashed #007cba' : '1px solid transparent',
-                transition: 'background 0.1s',
-            }}
-        >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                {hasChildren ? (
-                    <span
-                        onClick={(e) => { e.stopPropagation(); onToggle(folder.id); }}
-                        style={{
-                            cursor: 'pointer',
-                            display: 'inline-block',
-                            width: '16px',
-                            textAlign: 'center',
-                            fontSize: '10px',
-                            userSelect: 'none',
-                            transition: 'transform 0.15s',
-                            transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-                        }}
-                    >
-                        &#9654;
+        <>
+            <li
+                ref={setNodeRef}
+                style={{
+                    padding: '6px 8px 6px ' + (12 + depth * 16) + 'px',
+                    cursor: 'pointer',
+                    borderRadius: '3px',
+                    fontWeight: isSelected ? '600' : 'normal',
+                    background: isOver
+                        ? '#e8f4fb'
+                        : isSelected
+                        ? '#f0f6fc'
+                        : 'transparent',
+                    border: isOver ? '1px dashed #007cba' : '1px solid transparent',
+                    transition: 'background 0.1s',
+                }}
+            >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {hasChildren ? (
+                        <span
+                            onClick={(e) => { e.stopPropagation(); onToggle(folder.id); }}
+                            style={{
+                                cursor: 'pointer',
+                                display: 'inline-block',
+                                width: '16px',
+                                textAlign: 'center',
+                                fontSize: '10px',
+                                userSelect: 'none',
+                                transition: 'transform 0.15s',
+                                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                            }}
+                        >
+                            &#9654;
+                        </span>
+                    ) : (
+                        <span style={{ display: 'inline-block', width: '16px' }} />
+                    )}
+                    <span onClick={() => onSelect(folder.id)} style={{ flex: 1 }}>
+                        📁 {folder.name}
                     </span>
-                ) : (
-                    <span style={{ display: 'inline-block', width: '16px' }} />
-                )}
-                <span onClick={() => onSelect(folder.id)} style={{ flex: 1 }}>
-                    📁 {folder.name}
+                    {isSelected && (
+                        <button
+                            aria-label="Delete folder"
+                            onClick={(e) => { e.stopPropagation(); onDeleteRequest(folder.id); }}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0 2px',
+                                fontSize: '14px',
+                                lineHeight: 1,
+                                color: '#a00',
+                            }}
+                        >
+                            🗑
+                        </button>
+                    )}
                 </span>
-            </span>
-        </li>
+            </li>
+            {showConfirm && (
+                <li style={{
+                    padding: '6px 8px 6px ' + (12 + depth * 16) + 'px',
+                    background: '#fff8e5',
+                    border: '1px solid #f0c040',
+                    borderRadius: '3px',
+                    fontSize: '12px',
+                }}>
+                    <span>
+                        Delete &ldquo;{folder.name}&rdquo;? Images and sub-folders will be moved to the parent.
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                        <button
+                            onClick={onConfirmDelete}
+                            disabled={deleting}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            Confirm
+                        </button>
+                        <button
+                            onClick={onCancelDelete}
+                            disabled={deleting}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </li>
+            )}
+        </>
     );
 };
 
@@ -60,7 +111,10 @@ const buildTree = (folders, parentId = 0) => {
 };
 
 // Render the tree recursively
-const FolderTree = ({ nodes, depth = 0, selectedFolderId, onSelect, collapsedIds, onToggle }) =>
+const FolderTree = ({
+    nodes, depth = 0, selectedFolderId, onSelect, collapsedIds, onToggle,
+    onDeleteRequest, confirmDeleteId, onConfirmDelete, onCancelDelete, deleting,
+}) =>
     nodes.map((node) => {
         const isCollapsed = collapsedIds.has(node.id);
         return (
@@ -73,6 +127,11 @@ const FolderTree = ({ nodes, depth = 0, selectedFolderId, onSelect, collapsedIds
                     hasChildren={node.children.length > 0}
                     isCollapsed={isCollapsed}
                     onToggle={onToggle}
+                    onDeleteRequest={onDeleteRequest}
+                    showConfirm={confirmDeleteId === node.id}
+                    onConfirmDelete={onConfirmDelete}
+                    onCancelDelete={onCancelDelete}
+                    deleting={deleting}
                 />
                 {node.children.length > 0 && !isCollapsed && (
                     <FolderTree
@@ -82,6 +141,11 @@ const FolderTree = ({ nodes, depth = 0, selectedFolderId, onSelect, collapsedIds
                         onSelect={onSelect}
                         collapsedIds={collapsedIds}
                         onToggle={onToggle}
+                        onDeleteRequest={onDeleteRequest}
+                        confirmDeleteId={confirmDeleteId}
+                        onConfirmDelete={onConfirmDelete}
+                        onCancelDelete={onCancelDelete}
+                        deleting={deleting}
                     />
                 )}
             </div>
@@ -94,6 +158,8 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [newFolderName, setNewFolderName] = useState('');
     const [creating, setCreating] = useState(false);
     const [collapsedIds, setCollapsedIds] = useState(new Set());
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+    const [deleting, setDeleting] = useState(false);
     const inputRef = useRef(null);
 
     // Root inbox drop target
@@ -145,6 +211,25 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (!confirmDeleteId) return;
+        setDeleting(true);
+        try {
+            const result = await deleteFolder(confirmDeleteId);
+            const parentId = result?.parent_id ?? 0;
+            setConfirmDeleteId(null);
+            const updated = await getFolders();
+            setFolders(updated);
+            if (onSelectFolder && selectedFolderId === confirmDeleteId) {
+                onSelectFolder(parentId || null);
+            }
+        } catch (err) {
+            console.error('Delete failed:', err);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') handleCreate();
         if (e.key === 'Escape') { setIsCreating(false); setNewFolderName(''); }
@@ -179,6 +264,11 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
                 onSelect={onSelectFolder}
                 collapsedIds={collapsedIds}
                 onToggle={toggleCollapse}
+                onDeleteRequest={(id) => setConfirmDeleteId(id)}
+                confirmDeleteId={confirmDeleteId}
+                onConfirmDelete={handleDelete}
+                onCancelDelete={() => setConfirmDeleteId(null)}
+                deleting={deleting}
             />
 
             {/* New Folder form — creates under selected folder */}

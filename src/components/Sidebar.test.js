@@ -5,14 +5,18 @@ import Sidebar from './Sidebar';
 jest.mock('../api/client', () => ({
     getFolders: jest.fn().mockResolvedValue([]),
     createFolder: jest.fn(),
+    deleteFolder: jest.fn(),
+    moveFolder: jest.fn(),
 }));
 
-import { getFolders, createFolder } from '../api/client';
+import { getFolders, createFolder, deleteFolder, moveFolder } from '../api/client';
 
 describe('Sidebar Component', () => {
     beforeEach(() => {
         getFolders.mockResolvedValue([]);
         createFolder.mockReset();
+        deleteFolder.mockReset();
+        moveFolder.mockReset();
     });
 
     it('renders the root inbox correctly', async () => {
@@ -239,5 +243,90 @@ describe('Sidebar — collapse/expand', () => {
 
         // Assert — new child is visible (parent auto-expanded)
         await waitFor(() => expect(screen.getByText(/New Child/i)).toBeTruthy());
+    });
+});
+
+describe('Sidebar — delete folder', () => {
+    beforeEach(() => {
+        getFolders.mockResolvedValue([
+            { id: 1, name: 'To Delete', parent: 0, meta: { wpmf_folder_order: 0 } },
+        ]);
+        deleteFolder.mockReset();
+        moveFolder.mockReset();
+    });
+
+    it('shows the delete button only when the folder is selected', async () => {
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        expect(screen.getByRole('button', { name: /delete folder/i })).toBeTruthy();
+    });
+
+    it('does not show delete button when no folder is selected', async () => {
+        await act(async () => {
+            render(<Sidebar selectedFolderId={null} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        expect(screen.queryByRole('button', { name: /delete folder/i })).toBeFalsy();
+    });
+
+    it('shows confirmation banner when delete button is clicked', async () => {
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        fireEvent.click(screen.getByRole('button', { name: /delete folder/i }));
+        expect(screen.getByRole('button', { name: /^Confirm$/i })).toBeTruthy();
+        expect(screen.getByRole('button', { name: /^Cancel$/i })).toBeTruthy();
+    });
+
+    it('hides confirmation banner when Cancel is clicked', async () => {
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        fireEvent.click(screen.getByRole('button', { name: /delete folder/i }));
+        fireEvent.click(screen.getByRole('button', { name: /^Cancel$/i }));
+        expect(screen.queryByRole('button', { name: /^Confirm$/i })).toBeFalsy();
+    });
+
+    it('calls deleteFolder and reloads folders when Confirm is clicked', async () => {
+        deleteFolder.mockResolvedValue({ success: true, parent_id: 0 });
+        getFolders
+            .mockResolvedValueOnce([{ id: 1, name: 'To Delete', parent: 0, meta: { wpmf_folder_order: 0 } }])
+            .mockResolvedValue([]);
+        const onSelectFolder = jest.fn();
+
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={onSelectFolder} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        fireEvent.click(screen.getByRole('button', { name: /delete folder/i }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /^Confirm$/i }));
+        });
+
+        expect(deleteFolder).toHaveBeenCalledWith(1);
+        await waitFor(() => expect(screen.queryByText(/To Delete/i)).toBeFalsy());
+    });
+
+    it('auto-selects parent folder after deletion', async () => {
+        deleteFolder.mockResolvedValue({ success: true, parent_id: 0 });
+        getFolders
+            .mockResolvedValueOnce([{ id: 1, name: 'To Delete', parent: 0, meta: { wpmf_folder_order: 0 } }])
+            .mockResolvedValue([]);
+        const onSelectFolder = jest.fn();
+
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={onSelectFolder} />);
+        });
+        await waitFor(() => expect(screen.getByText(/To Delete/i)).toBeTruthy());
+        fireEvent.click(screen.getByRole('button', { name: /delete folder/i }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /^Confirm$/i }));
+        });
+
+        await waitFor(() => expect(onSelectFolder).toHaveBeenCalledWith(null));
     });
 });
