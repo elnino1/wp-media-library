@@ -150,7 +150,7 @@ const GapZone = ({ id, isActive }) => {
         <div
             ref={setNodeRef}
             style={{
-                height: isActive ? (isOver ? '16px' : '8px') : '2px',
+                height: isActive && isOver ? '16px' : '4px',
                 background: isOver ? '#007cba' : 'transparent',
                 borderRadius: '2px',
                 margin: '1px 0',
@@ -224,6 +224,8 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [deleteError, setDeleteError] = useState(null);
     const [isDraggingFolderId, setIsDraggingFolderId] = useState(null);
     const inputRef = useRef(null);
+    const foldersRef = useRef(folders);
+    useEffect(() => { foldersRef.current = folders; }, [folders]);
 
     // Root inbox drop target
     const { setNodeRef: setRootRef, isOver: isOverRoot } = useDroppable({ id: 0 });
@@ -334,9 +336,9 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
             }
 
             if (newParentId === draggedId) return;
-            if (isDescendantOf(folders, draggedId, newParentId)) return;
+            if (isDescendantOf(foldersRef.current, draggedId, newParentId)) return;
 
-            const siblings = folders
+            const siblings = foldersRef.current
                 .filter((f) => (f.parent || 0) === newParentId && f.id !== draggedId)
                 .sort((a, b) => (a.meta?.wpmf_folder_order ?? 0) - (b.meta?.wpmf_folder_order ?? 0));
 

@@ -375,4 +375,15 @@ describe('Sidebar — folder ordering', () => {
         await waitFor(() => expect(screen.getByText(/FolderA/i)).toBeTruthy());
         expect(screen.getByTitle(/Drag to reorder/i)).toBeTruthy();
     });
+
+    it('does not render drag handle for non-selected folder', async () => {
+        getFolders.mockResolvedValue([
+            { id: 1, name: 'FolderA', parent: 0, meta: { wpmf_folder_order: 0 } },
+        ]);
+        await act(async () => {
+            render(<Sidebar selectedFolderId={null} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/FolderA/i)).toBeTruthy());
+        expect(screen.queryByTitle(/Drag to reorder/i)).toBeFalsy();
+    });
 });
