@@ -17,17 +17,22 @@ jest.mock('./components/Sidebar', () => ({
     ),
 }));
 
+let capturedOnToggleSelect = null;
+
 jest.mock('./components/Grid', () => ({
     __esModule: true,
-    default: ({ selectedFolderId, refreshKey }) => (
-        <div
-            data-testid="grid"
-            data-selected={selectedFolderId}
-            data-refresh={refreshKey}
-        >
-            Grid
-        </div>
-    ),
+    default: ({ selectedFolderId, refreshKey, onToggleSelect }) => {
+        capturedOnToggleSelect = onToggleSelect;
+        return (
+            <div
+                data-testid="grid"
+                data-selected={selectedFolderId}
+                data-refresh={refreshKey}
+            >
+                Grid
+            </div>
+        );
+    },
 }));
 
 jest.mock('./components/Inspector', () => ({
@@ -56,12 +61,15 @@ import { moveItems } from './api/client';
 // Expose onDragEnd so tests can call it directly
 
 let capturedOnDragEnd = null;
+let capturedOnDragStart = null;
 
 jest.mock('@dnd-kit/core', () => ({
-    DndContext: ({ children, onDragEnd }) => {
+    DndContext: ({ children, onDragEnd, onDragStart, onDragCancel }) => {
         capturedOnDragEnd = onDragEnd;
+        capturedOnDragStart = onDragStart;
         return <div data-testid="dnd-context">{children}</div>;
     },
+    DragOverlay: ({ children }) => (children ? <div data-testid="drag-overlay">{children}</div> : null),
     useSensors: (...sensors) => sensors,
     useSensor: (sensor, opts) => ({ sensor, opts }),
     PointerSensor: 'PointerSensor',
@@ -71,6 +79,8 @@ jest.mock('@dnd-kit/core', () => ({
 
 beforeEach(() => {
     capturedOnDragEnd = null;
+    capturedOnDragStart = null;
+    capturedOnToggleSelect = null;
     moveItems.mockReset();
     moveItems.mockResolvedValue({});
 });
@@ -159,5 +169,42 @@ describe('App — handleDragEnd success', () => {
             );
             expect(refreshAfter).toBe(refreshBefore + 1);
         });
+    });
+});
+
+describe('App — batch move with selection', () => {
+    it('moves all selected IDs when dragged item is in the selection', async () => {
+        // Arrange — render and select items 10 and 20
+        await act(async () => { render(<App />); });
+        act(() => { capturedOnToggleSelect(10); });
+        act(() => { capturedOnToggleSelect(20); });
+
+        // Act — drag item 10 onto folder 5
+        await act(async () => {
+            capturedOnDragEnd({ active: { id: 10 }, over: { id: 5 } });
+        });
+
+        // Assert — all selected IDs moved together
+        await waitFor(() => {
+            const call = moveItems.mock.calls[0];
+            expect(call[0].sort()).toEqual([10, 20]);
+            expect(call[1]).toBe(5);
+        });
+    });
+
+    it('moves only the dragged item when it is NOT in the selection', async () => {
+        // Arrange — select item 20 only, drag item 10 (unselected)
+        await act(async () => { render(<App />); });
+        act(() => { capturedOnToggleSelect(20); });
+
+        // Act — drag item 10 (not selected)
+        await act(async () => {
+            capturedOnDragEnd({ active: { id: 10 }, over: { id: 5 } });
+        });
+
+        // Assert — only item 10 moved (selection ignored)
+        await waitFor(() =>
+            expect(moveItems).toHaveBeenCalledWith([10], 5)
+        );
     });
 });

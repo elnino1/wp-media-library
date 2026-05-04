@@ -1,83 +1,6 @@
 import { useState, useEffect } from '@wordpress/element';
-import { useDraggable } from '@dnd-kit/core';
 import { getItems } from '../api/client';
-
-// A single draggable media card
-const MediaItem = ({ item }) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: item.id,
-    });
-
-    const isImage = item.media_type === 'image';
-    const thumbnailUrl =
-        item.media_details?.sizes?.thumbnail?.source_url ||
-        item.media_details?.sizes?.medium?.source_url ||
-        item.source_url;
-    const title = item.title?.rendered || 'Item ' + item.id;
-
-    const style = {
-        width: '150px',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        overflow: 'hidden',
-        background: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: isDragging ? 'grabbing' : 'grab',
-        boxShadow: isDragging
-            ? '0 8px 24px rgba(0,0,0,0.18)'
-            : '0 1px 3px rgba(0,0,0,0.06)',
-        opacity: isDragging ? 0.75 : 1,
-        transform: transform
-            ? `translate(${transform.x}px, ${transform.y}px)`
-            : undefined,
-        zIndex: isDragging ? 999 : undefined,
-        position: isDragging ? 'relative' : undefined,
-    };
-
-    return (
-        <div ref={setNodeRef} style={style} title={title} {...listeners} {...attributes}>
-            {/* Thumbnail area */}
-            <div style={{
-                width: '100%',
-                height: '110px',
-                background: '#f0f0f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                flexShrink: 0,
-            }}>
-                {isImage && thumbnailUrl ? (
-                    <img
-                        src={thumbnailUrl}
-                        alt={title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        draggable={false}
-                    />
-                ) : (
-                    <span style={{ fontSize: '36px' }}>
-                        {item.media_type === 'video' ? '🎬' : '📄'}
-                    </span>
-                )}
-            </div>
-
-            {/* Filename label */}
-            <div style={{
-                padding: '6px 8px',
-                fontSize: '11px',
-                color: '#444',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                borderTop: '1px solid #eee',
-                background: '#fafafa',
-            }}>
-                {title}
-            </div>
-        </div>
-    );
-};
+import MediaItem from './MediaItem';
 
 // Opens the native WordPress media uploader
 const openWpMediaUploader = (onUploaded) => {
@@ -96,7 +19,7 @@ const openWpMediaUploader = (onUploaded) => {
     frame.open();
 };
 
-const Grid = ({ selectedFolderId, refreshKey, onRefresh }) => {
+const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new Set(), onToggleSelect }) => {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -142,7 +65,12 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh }) => {
 
             <div className="grid-items" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
                 {items.map((item) => (
-                    <MediaItem key={item.id} item={item} />
+                    <MediaItem
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedItemIds.has(item.id)}
+                        onToggleSelect={onToggleSelect}
+                    />
                 ))}
             </div>
 
