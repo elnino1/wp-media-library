@@ -1,33 +1,51 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { useDroppable } from '@dnd-kit/core';
-import { getFolders, createFolder, deleteFolder } from '../api/client';
+import { useDroppable, useDraggable, useDndMonitor } from '@dnd-kit/core';
+import { getFolders, createFolder, deleteFolder, moveFolder } from '../api/client';
 
-// A single droppable folder row
+// A single droppable + draggable folder row
 const FolderItem = ({
     folder, depth, isSelected, onSelect, hasChildren, isCollapsed, onToggle,
     onDeleteRequest, showConfirm, onConfirmDelete, onCancelDelete, deleting, deleteError,
+    isDraggingAny,
 }) => {
-    const { setNodeRef, isOver } = useDroppable({ id: folder.id });
+    const { setNodeRef: setDropRef, isOver } = useDroppable({ id: folder.id });
+    const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
+        id: folder.id,
+        data: { type: 'folder', folderId: folder.id },
+    });
 
     return (
         <>
             <li
-                ref={setNodeRef}
+                ref={setDropRef}
                 style={{
                     padding: '6px 8px 6px ' + (12 + depth * 16) + 'px',
                     cursor: 'pointer',
                     borderRadius: '3px',
                     fontWeight: isSelected ? '600' : 'normal',
-                    background: isOver
+                    opacity: isDragging ? 0.4 : 1,
+                    background: isOver && isDraggingAny
                         ? '#e8f4fb'
                         : isSelected
                         ? '#f0f6fc'
                         : 'transparent',
-                    border: isOver ? '1px dashed #007cba' : '1px solid transparent',
+                    border: isOver && isDraggingAny ? '1px dashed #007cba' : '1px solid transparent',
                     transition: 'background 0.1s',
                 }}
             >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {isSelected && (
+                        <span
+                            ref={setDragRef}
+                            {...listeners}
+                            {...attributes}
+                            style={{ cursor: 'grab', color: '#bbb', fontSize: '14px', userSelect: 'none', lineHeight: 1 }}
+                            title="Drag to reorder"
+                        >
+                            ⠿
+                        </span>
+                    )}
+                    {!isSelected && <span style={{ display: 'inline-block', width: '16px' }} />}
                     {hasChildren ? (
                         <span
                             onClick={(e) => { e.stopPropagation(); onToggle(folder.id); }}
@@ -107,57 +125,93 @@ const FolderItem = ({
     );
 };
 
-// Build a nested tree from a flat list (WP REST returns flat terms)
+// Build a nested tree from a flat list (WP REST returns flat terms), sorted by wpmf_folder_order
 const buildTree = (folders, parentId = 0) => {
     if (!Array.isArray(folders)) return [];
     return folders
         .filter((f) => f && typeof f.id !== 'undefined' && (f.parent || 0) === parentId)
+        .sort((a, b) => (a.meta?.wpmf_folder_order ?? 0) - (b.meta?.wpmf_folder_order ?? 0))
         .map((f) => ({ ...f, children: buildTree(folders, f.id) }));
 };
 
-// Render the tree recursively
+// Helper to check if a folder is a descendant of a given ancestor
+const isDescendantOf = (folders, ancestorId, checkId) => {
+    if (!checkId || checkId === 0) return false;
+    const folder = folders.find((f) => f.id === checkId);
+    if (!folder) return false;
+    if ((folder.parent || 0) === ancestorId) return true;
+    return isDescendantOf(folders, ancestorId, folder.parent || 0);
+};
+
+// A slim drop zone that appears between folder rows for sibling reordering
+const GapZone = ({ id, isActive }) => {
+    const { setNodeRef, isOver } = useDroppable({ id });
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                height: isActive ? (isOver ? '16px' : '8px') : '2px',
+                background: isOver ? '#007cba' : 'transparent',
+                borderRadius: '2px',
+                margin: '1px 0',
+                transition: 'height 0.1s, background 0.1s',
+            }}
+        />
+    );
+};
+
+// Render the tree recursively with gap zones for drag-to-reorder
 const FolderTree = ({
     nodes, depth = 0, selectedFolderId, onSelect, collapsedIds, onToggle,
     onDeleteRequest, confirmDeleteId, onConfirmDelete, onCancelDelete, deleting, deleteError,
-}) =>
-    nodes.map((node) => {
-        const isCollapsed = collapsedIds.has(node.id);
-        return (
-            <div key={node.id}>
-                <FolderItem
-                    folder={node}
-                    depth={depth}
-                    isSelected={selectedFolderId === node.id}
-                    onSelect={onSelect}
-                    hasChildren={node.children.length > 0}
-                    isCollapsed={isCollapsed}
-                    onToggle={onToggle}
-                    onDeleteRequest={onDeleteRequest}
-                    showConfirm={confirmDeleteId === node.id}
-                    onConfirmDelete={onConfirmDelete}
-                    onCancelDelete={onCancelDelete}
-                    deleting={deleting}
-                    deleteError={confirmDeleteId === node.id ? deleteError : null}
-                />
-                {node.children.length > 0 && !isCollapsed && (
-                    <FolderTree
-                        nodes={node.children}
-                        depth={depth + 1}
-                        selectedFolderId={selectedFolderId}
+    isDraggingAny, parentId = 0,
+}) => (
+    <>
+        <GapZone id={`gap:${parentId}:0`} isActive={isDraggingAny} />
+        {nodes.map((node, index) => {
+            const isCollapsed = collapsedIds.has(node.id);
+            return (
+                <div key={node.id}>
+                    <FolderItem
+                        folder={node}
+                        depth={depth}
+                        isSelected={selectedFolderId === node.id}
                         onSelect={onSelect}
-                        collapsedIds={collapsedIds}
+                        hasChildren={node.children.length > 0}
+                        isCollapsed={isCollapsed}
                         onToggle={onToggle}
                         onDeleteRequest={onDeleteRequest}
-                        confirmDeleteId={confirmDeleteId}
+                        showConfirm={confirmDeleteId === node.id}
                         onConfirmDelete={onConfirmDelete}
                         onCancelDelete={onCancelDelete}
                         deleting={deleting}
-                        deleteError={deleteError}
+                        deleteError={confirmDeleteId === node.id ? deleteError : null}
+                        isDraggingAny={isDraggingAny}
                     />
-                )}
-            </div>
-        );
-    });
+                    {node.children.length > 0 && !isCollapsed && (
+                        <FolderTree
+                            nodes={node.children}
+                            depth={depth + 1}
+                            selectedFolderId={selectedFolderId}
+                            onSelect={onSelect}
+                            collapsedIds={collapsedIds}
+                            onToggle={onToggle}
+                            onDeleteRequest={onDeleteRequest}
+                            confirmDeleteId={confirmDeleteId}
+                            onConfirmDelete={onConfirmDelete}
+                            onCancelDelete={onCancelDelete}
+                            deleting={deleting}
+                            deleteError={deleteError}
+                            isDraggingAny={isDraggingAny}
+                            parentId={node.id}
+                        />
+                    )}
+                    <GapZone id={`gap:${parentId}:${index + 1}`} isActive={isDraggingAny} />
+                </div>
+            );
+        })}
+    </>
+);
 
 const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [folders, setFolders] = useState([]);
@@ -168,6 +222,7 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState(null);
+    const [isDraggingFolderId, setIsDraggingFolderId] = useState(null);
     const inputRef = useRef(null);
 
     // Root inbox drop target
@@ -241,6 +296,57 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
         }
     };
 
+    const handleFolderMove = async (draggedId, newParentId, siblingIds) => {
+        try {
+            await moveFolder(draggedId, newParentId, siblingIds);
+            const updated = await getFolders();
+            setFolders(updated);
+        } catch (err) {
+            console.error('Folder move failed:', err);
+        }
+    };
+
+    useDndMonitor({
+        onDragStart({ active }) {
+            if (active.data?.current?.type === 'folder') {
+                setIsDraggingFolderId(active.id);
+            }
+        },
+        onDragEnd({ active, over }) {
+            setIsDraggingFolderId(null);
+            if (active.data?.current?.type !== 'folder') return;
+            if (!over) return;
+
+            const draggedId = active.id;
+            let newParentId;
+            let insertPosition;
+
+            const overId = String(over.id);
+            if (overId.startsWith('gap:')) {
+                const parts = overId.split(':');
+                newParentId = Number(parts[1]);
+                insertPosition = Number(parts[2]);
+            } else if (typeof over.id === 'number' && over.id !== draggedId) {
+                newParentId = over.id;
+                insertPosition = Infinity;
+            } else {
+                return;
+            }
+
+            if (newParentId === draggedId) return;
+            if (isDescendantOf(folders, draggedId, newParentId)) return;
+
+            const siblings = folders
+                .filter((f) => (f.parent || 0) === newParentId && f.id !== draggedId)
+                .sort((a, b) => (a.meta?.wpmf_folder_order ?? 0) - (b.meta?.wpmf_folder_order ?? 0));
+
+            const siblingIds = siblings.map((s) => s.id);
+            siblingIds.splice(Math.min(insertPosition, siblingIds.length), 0, draggedId);
+
+            handleFolderMove(draggedId, newParentId, siblingIds);
+        },
+    });
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') handleCreate();
         if (e.key === 'Escape') { setIsCreating(false); setNewFolderName(''); }
@@ -281,6 +387,8 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
                 onCancelDelete={() => { setConfirmDeleteId(null); setDeleteError(null); }}
                 deleting={deleting}
                 deleteError={deleteError}
+                isDraggingAny={!!isDraggingFolderId}
+                parentId={0}
             />
 
             {/* New Folder form — creates under selected folder */}

@@ -1,6 +1,18 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import Sidebar from './Sidebar';
 
+// Mock dnd-kit/core so Sidebar tests don't require a DndContext wrapper
+jest.mock('@dnd-kit/core', () => ({
+    useDroppable: jest.fn(() => ({ setNodeRef: jest.fn(), isOver: false })),
+    useDraggable: jest.fn(() => ({
+        attributes: {},
+        listeners: {},
+        setNodeRef: jest.fn(),
+        isDragging: false,
+    })),
+    useDndMonitor: jest.fn(),
+}));
+
 // Mock the API client so tests don't make real network calls
 jest.mock('../api/client', () => ({
     getFolders: jest.fn().mockResolvedValue([]),
@@ -328,5 +340,39 @@ describe('Sidebar — delete folder', () => {
         });
 
         await waitFor(() => expect(onSelectFolder).toHaveBeenCalledWith(null));
+    });
+});
+
+describe('Sidebar — folder ordering', () => {
+    beforeEach(() => {
+        deleteFolder.mockReset();
+        moveFolder.mockReset();
+    });
+
+    it('renders folders sorted by wpmf_folder_order ascending', async () => {
+        getFolders.mockResolvedValue([
+            { id: 1, name: 'Beta',  parent: 0, meta: { wpmf_folder_order: 20 } },
+            { id: 2, name: 'Alpha', parent: 0, meta: { wpmf_folder_order: 10 } },
+            { id: 3, name: 'Gamma', parent: 0, meta: { wpmf_folder_order: 30 } },
+        ]);
+
+        await act(async () => { render(<Sidebar />); });
+        await waitFor(() => expect(screen.getByText(/Alpha/i)).toBeTruthy());
+
+        const items = screen.getAllByText(/Alpha|Beta|Gamma/);
+        expect(items[0].textContent).toMatch(/Alpha/);
+        expect(items[1].textContent).toMatch(/Beta/);
+        expect(items[2].textContent).toMatch(/Gamma/);
+    });
+
+    it('renders drag handle only for the selected folder', async () => {
+        getFolders.mockResolvedValue([
+            { id: 1, name: 'FolderA', parent: 0, meta: { wpmf_folder_order: 0 } },
+        ]);
+        await act(async () => {
+            render(<Sidebar selectedFolderId={1} onSelectFolder={jest.fn()} />);
+        });
+        await waitFor(() => expect(screen.getByText(/FolderA/i)).toBeTruthy());
+        expect(screen.getByTitle(/Drag to reorder/i)).toBeTruthy();
     });
 });
