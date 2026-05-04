@@ -29,8 +29,8 @@ Two new features for the WP Media Library sidebar:
 
 1. User clicks 🗑 on the selected folder.
 2. An inline confirmation banner appears just below the folder row (no `window.confirm`):
-   > Supprimer « Nom » ? Les images et sous-dossiers remontent au parent.  
-   > **[Confirmer]** **[Annuler]**
+   > Delete "Name"? Images and sub-folders will be moved to the parent.  
+   > **[Confirm]** **[Cancel]**
 3. User clicks **Confirmer** → API call `DELETE /wpmf/v1/folder/{id}`.
 4. On success:
    - If the deleted folder was selected → auto-select its parent (or root if parent = 0).
