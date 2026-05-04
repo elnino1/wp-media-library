@@ -5,7 +5,7 @@ import { getFolders, createFolder, deleteFolder } from '../api/client';
 // A single droppable folder row
 const FolderItem = ({
     folder, depth, isSelected, onSelect, hasChildren, isCollapsed, onToggle,
-    onDeleteRequest, showConfirm, onConfirmDelete, onCancelDelete, deleting,
+    onDeleteRequest, showConfirm, onConfirmDelete, onCancelDelete, deleting, deleteError,
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id: folder.id });
 
@@ -77,9 +77,14 @@ const FolderItem = ({
                     borderRadius: '3px',
                     fontSize: '12px',
                 }}>
-                    <span>
+                    <p style={{ margin: '0 0 4px' }}>
                         Delete &ldquo;{folder.name}&rdquo;? Images and sub-folders will be moved to the parent.
-                    </span>
+                    </p>
+                    {deleteError && (
+                        <p style={{ margin: '0 0 6px', color: '#721c24', fontWeight: '600' }}>
+                            {deleteError}
+                        </p>
+                    )}
                     <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
                         <button
                             onClick={onConfirmDelete}
@@ -113,7 +118,7 @@ const buildTree = (folders, parentId = 0) => {
 // Render the tree recursively
 const FolderTree = ({
     nodes, depth = 0, selectedFolderId, onSelect, collapsedIds, onToggle,
-    onDeleteRequest, confirmDeleteId, onConfirmDelete, onCancelDelete, deleting,
+    onDeleteRequest, confirmDeleteId, onConfirmDelete, onCancelDelete, deleting, deleteError,
 }) =>
     nodes.map((node) => {
         const isCollapsed = collapsedIds.has(node.id);
@@ -132,6 +137,7 @@ const FolderTree = ({
                     onConfirmDelete={onConfirmDelete}
                     onCancelDelete={onCancelDelete}
                     deleting={deleting}
+                    deleteError={confirmDeleteId === node.id ? deleteError : null}
                 />
                 {node.children.length > 0 && !isCollapsed && (
                     <FolderTree
@@ -146,6 +152,7 @@ const FolderTree = ({
                         onConfirmDelete={onConfirmDelete}
                         onCancelDelete={onCancelDelete}
                         deleting={deleting}
+                        deleteError={deleteError}
                     />
                 )}
             </div>
@@ -160,6 +167,7 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [collapsedIds, setCollapsedIds] = useState(new Set());
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
     const inputRef = useRef(null);
 
     // Root inbox drop target
@@ -212,19 +220,22 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     };
 
     const handleDelete = async () => {
-        if (!confirmDeleteId) return;
+        const idToDelete = confirmDeleteId;
+        if (!idToDelete) return;
         setDeleting(true);
         try {
-            const result = await deleteFolder(confirmDeleteId);
+            setDeleteError(null);
+            const result = await deleteFolder(idToDelete);
             const parentId = result?.parent_id ?? 0;
             setConfirmDeleteId(null);
             const updated = await getFolders();
             setFolders(updated);
-            if (onSelectFolder && selectedFolderId === confirmDeleteId) {
+            if (onSelectFolder && selectedFolderId === idToDelete) {
                 onSelectFolder(parentId || null);
             }
         } catch (err) {
             console.error('Delete failed:', err);
+            setDeleteError('Delete failed. Please try again.');
         } finally {
             setDeleting(false);
         }
@@ -267,8 +278,9 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
                 onDeleteRequest={(id) => setConfirmDeleteId(id)}
                 confirmDeleteId={confirmDeleteId}
                 onConfirmDelete={handleDelete}
-                onCancelDelete={() => setConfirmDeleteId(null)}
+                onCancelDelete={() => { setConfirmDeleteId(null); setDeleteError(null); }}
                 deleting={deleting}
+                deleteError={deleteError}
             />
 
             {/* New Folder form — creates under selected folder */}
