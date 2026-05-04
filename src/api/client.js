@@ -38,3 +38,18 @@ export const moveItems = async (itemIds, folderId) => {
         data: { item_ids: itemIds, folder_id: folderId }
     });
 };
+
+export const deleteFolder = async (id) => {
+    return await apiFetch({
+        path: `/wpmf/v1/folder/${id}`,
+        method: 'DELETE',
+    });
+};
+
+export const moveFolder = async (id, parentId, siblingIds) => {
+    return await apiFetch({
+        path: `/wpmf/v1/folder/${id}/move`,
+        method: 'POST',
+        data: { parent_id: parentId, sibling_ids: siblingIds },
+    });
+};

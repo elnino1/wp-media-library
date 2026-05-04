@@ -26,3 +26,6 @@ function _manually_load_plugin() {
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 require $_tests_dir . '/includes/bootstrap.php';
+
+// Fire the init action once after WordPress and the plugin are fully loaded
+do_action( 'init' );

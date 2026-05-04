@@ -6,7 +6,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPMF_Taxonomy {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_virtual_folder_taxonomy' ) );
+		// Priority 11: taxonomy must be registered at priority 10 before meta can be registered for it
+		add_action( 'init', array( __CLASS__, 'register_folder_order_meta' ), 11 );
 		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_fields' ) );
+	}
+
+	public static function register_folder_order_meta() {
+		register_term_meta( 'wp_virtual_folder', 'wpmf_folder_order', array(
+			'type'         => 'integer',
+			'single'       => true,
+			'default'      => 0,
+			'show_in_rest' => true,
+		) );
 	}
 
 	public static function register_rest_fields() {

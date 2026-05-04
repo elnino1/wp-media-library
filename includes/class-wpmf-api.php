@@ -26,11 +26,98 @@ class WPMF_API {
 				),
 			),
 		) );
+
+		register_rest_route( 'wpmf/v1', '/folder/(?P<id>\d+)', array(
+			'methods'             => 'DELETE',
+			'callback'            => array( __CLASS__, 'delete_folder' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_categories' ) || current_user_can( 'manage_options' );
+			},
+			'args'                => array(
+				'id' => array(
+					'required'          => true,
+					'validate_callback' => function( $param ) {
+						return is_numeric( $param );
+					},
+				),
+			),
+		) );
+
+		register_rest_route( 'wpmf/v1', '/folder/(?P<id>\d+)/move', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'move_folder' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_categories' ) || current_user_can( 'manage_options' );
+			},
+			'args'                => array(
+				'id' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+				'parent_id' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+				'sibling_ids' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_array( $param );
+					},
+				),
+			),
+		) );
 	}
 
 	// Make sure the user has basic edit capabilities. The callback logic itself checks capabilities per post.
 	public static function check_permissions() {
 		return current_user_can( 'upload_files' ) || current_user_can( 'edit_products' );
+	}
+
+	public static function delete_folder( WP_REST_Request $request ) {
+		$id   = (int) $request->get_param( 'id' );
+		$term = get_term( $id, 'wp_virtual_folder' );
+
+		if ( is_wp_error( $term ) || ! $term ) {
+			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
+		}
+
+		$parent_id = (int) $term->parent;
+
+		// Move all media in this folder to the parent (or root)
+		$media_ids = get_objects_in_term( $id, 'wp_virtual_folder' );
+		if ( ! is_wp_error( $media_ids ) ) {
+			foreach ( $media_ids as $media_id ) {
+				if ( $parent_id > 0 ) {
+					wp_set_object_terms( (int) $media_id, array( $parent_id ), 'wp_virtual_folder' );
+				} else {
+					wp_set_object_terms( (int) $media_id, array(), 'wp_virtual_folder' );
+				}
+			}
+		}
+
+		// Promote immediate child folders one level up
+		$direct_children = get_terms( array(
+			'taxonomy'   => 'wp_virtual_folder',
+			'parent'     => $id,
+			'hide_empty' => false,
+			'fields'     => 'ids',
+		) );
+		if ( ! is_wp_error( $direct_children ) ) {
+			foreach ( $direct_children as $child_id ) {
+				wp_update_term( (int) $child_id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
+			}
+		}
+
+		$deleted = wp_delete_term( $id, 'wp_virtual_folder' );
+		if ( is_wp_error( $deleted ) || false === $deleted ) {
+			return new WP_Error( 'delete_failed', 'Could not delete folder', array( 'status' => 500 ) );
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'parent_id' => $parent_id ) );
 	}
 
 	public static function move_items( WP_REST_Request $request ) {
@@ -72,5 +159,49 @@ class WPMF_API {
         }
 
 		return rest_ensure_response( array( 'success' => true, 'results' => $results ) );
+	}
+
+	public static function move_folder( WP_REST_Request $request ) {
+		$id          = (int) $request->get_param( 'id' );
+		$parent_id   = (int) $request->get_param( 'parent_id' );
+		$sibling_ids = array_map( 'intval', (array) $request->get_param( 'sibling_ids' ) );
+
+		$term = get_term( $id, 'wp_virtual_folder' );
+		if ( is_wp_error( $term ) || ! $term ) {
+			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
+		}
+
+		if ( $parent_id === $id ) {
+			return new WP_Error( 'invalid_parent', 'A folder cannot be its own parent.', array( 'status' => 400 ) );
+		}
+
+		if ( $parent_id !== 0 ) {
+			$parent_term = get_term( $parent_id, 'wp_virtual_folder' );
+			if ( is_wp_error( $parent_term ) || ! $parent_term ) {
+				return new WP_Error( 'invalid_parent', 'Target parent folder does not exist.', array( 'status' => 400 ) );
+			}
+		}
+
+		$all_descendants = get_term_children( $id, 'wp_virtual_folder' );
+		if ( ! is_wp_error( $all_descendants ) && in_array( $parent_id, array_map( 'intval', $all_descendants ), true ) ) {
+			return new WP_Error( 'circular_parent', 'Cannot move a folder under one of its own descendants.', array( 'status' => 400 ) );
+		}
+
+		$result = wp_update_term( $id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( 'update_failed', 'Could not move folder.', array( 'status' => 500 ) );
+		}
+
+		// Only write order meta for terms that are real wp_virtual_folder terms
+		$valid_sibling_ids = array_filter( $sibling_ids, function( $sid ) {
+			$t = get_term( $sid, 'wp_virtual_folder' );
+			return $t && ! is_wp_error( $t );
+		} );
+		foreach ( array_values( $valid_sibling_ids ) as $index => $sibling_id ) {
+			update_term_meta( $sibling_id, 'wpmf_folder_order', $index * 10 );
+		}
+
+		$updated_term = get_term( $id, 'wp_virtual_folder' );
+		return rest_ensure_response( $updated_term );
 	}
 }
