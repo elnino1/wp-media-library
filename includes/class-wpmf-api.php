@@ -183,7 +183,7 @@ class WPMF_API {
 		}
 
 		$all_descendants = get_term_children( $id, 'wp_virtual_folder' );
-		if ( ! is_wp_error( $all_descendants ) && in_array( $parent_id, $all_descendants, true ) ) {
+		if ( ! is_wp_error( $all_descendants ) && in_array( $parent_id, array_map( 'intval', $all_descendants ), true ) ) {
 			return new WP_Error( 'circular_parent', 'Cannot move a folder under one of its own descendants.', array( 'status' => 400 ) );
 		}
 
