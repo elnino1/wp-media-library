@@ -175,9 +175,18 @@ class WPMF_API {
 			return new WP_Error( 'forbidden', 'You do not have permission to move folders', array( 'status' => 403 ) );
 		}
 
+		if ( $parent_id === $id ) {
+			return new WP_Error( 'invalid_parent', 'A folder cannot be its own parent.', array( 'status' => 400 ) );
+		}
+
+		$all_descendants = get_term_children( $id, 'wp_virtual_folder' );
+		if ( ! is_wp_error( $all_descendants ) && in_array( $parent_id, $all_descendants, true ) ) {
+			return new WP_Error( 'circular_parent', 'Cannot move a folder under one of its own descendants.', array( 'status' => 400 ) );
+		}
+
 		$result = wp_update_term( $id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
 		if ( is_wp_error( $result ) ) {
-			return $result;
+			return new WP_Error( 'update_failed', 'Could not move folder.', array( 'status' => 500 ) );
 		}
 
 		foreach ( $sibling_ids as $index => $sibling_id ) {
