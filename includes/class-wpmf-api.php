@@ -40,6 +40,32 @@ class WPMF_API {
 				),
 			),
 		) );
+
+		register_rest_route( 'wpmf/v1', '/folder/(?P<id>\d+)/move', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'move_folder' ),
+			'permission_callback' => array( __CLASS__, 'check_permissions' ),
+			'args'                => array(
+				'id' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+				'parent_id' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+				'sibling_ids' => array(
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_array( $param );
+					},
+				),
+			),
+		) );
 	}
 
 	// Make sure the user has basic edit capabilities. The callback logic itself checks capabilities per post.
@@ -133,5 +159,31 @@ class WPMF_API {
         }
 
 		return rest_ensure_response( array( 'success' => true, 'results' => $results ) );
+	}
+
+	public static function move_folder( WP_REST_Request $request ) {
+		$id          = (int) $request->get_param( 'id' );
+		$parent_id   = (int) $request->get_param( 'parent_id' );
+		$sibling_ids = array_map( 'intval', (array) $request->get_param( 'sibling_ids' ) );
+
+		$term = get_term( $id, 'wp_virtual_folder' );
+		if ( is_wp_error( $term ) || ! $term ) {
+			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
+		}
+
+		if ( ! current_user_can( 'manage_categories' ) && ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'forbidden', 'You do not have permission to move folders', array( 'status' => 403 ) );
+		}
+
+		$result = wp_update_term( $id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		foreach ( $sibling_ids as $index => $sibling_id ) {
+			update_term_meta( $sibling_id, 'wpmf_folder_order', $index * 10 );
+		}
+
+		return rest_ensure_response( array( 'success' => true ) );
 	}
 }

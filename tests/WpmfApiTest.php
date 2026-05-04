@@ -131,4 +131,41 @@ class WpmfApiTest extends WP_UnitTestCase {
 
 		$this->assertContains( $response->get_status(), array( 401, 403 ) );
 	}
+
+	public function test_move_folder_updates_parent() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$new_parent = wp_insert_term( 'NewParent', 'wp_virtual_folder' );
+		$folder     = wp_insert_term( 'MovedFolder', 'wp_virtual_folder' );
+
+		$request = new WP_REST_Request( 'POST', '/wpmf/v1/folder/' . $folder['term_id'] . '/move' );
+		$request->set_url_params( array( 'id' => $folder['term_id'] ) );
+		$request->set_param( 'parent_id', $new_parent['term_id'] );
+		$request->set_param( 'sibling_ids', array( $folder['term_id'] ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$updated = get_term( $folder['term_id'], 'wp_virtual_folder' );
+		$this->assertEquals( (int) $new_parent['term_id'], (int) $updated->parent );
+	}
+
+	public function test_move_folder_assigns_sibling_order() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$a = wp_insert_term( 'A', 'wp_virtual_folder' );
+		$b = wp_insert_term( 'B', 'wp_virtual_folder' );
+		$c = wp_insert_term( 'C', 'wp_virtual_folder' );
+
+		// Move C to position 0 among root siblings [C, A, B]
+		$request = new WP_REST_Request( 'POST', '/wpmf/v1/folder/' . $c['term_id'] . '/move' );
+		$request->set_url_params( array( 'id' => $c['term_id'] ) );
+		$request->set_param( 'parent_id', 0 );
+		$request->set_param( 'sibling_ids', array( $c['term_id'], $a['term_id'], $b['term_id'] ) );
+		rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 0,  (int) get_term_meta( $c['term_id'], 'wpmf_folder_order', true ) );
+		$this->assertEquals( 10, (int) get_term_meta( $a['term_id'], 'wpmf_folder_order', true ) );
+		$this->assertEquals( 20, (int) get_term_meta( $b['term_id'], 'wpmf_folder_order', true ) );
+	}
 }
