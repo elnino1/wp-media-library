@@ -20,11 +20,14 @@ export const App = () => {
     }));
 
     const handleDragEnd = async ({ active, over }) => {
-        // `active.id` is the media item ID; `over.id` is the folder ID (or null)
-        if (!over || active.id === over.id) return;
+        // Folder drags are handled by Sidebar's useDndMonitor
+        if (active.data?.current?.type === 'folder') return;
+        // Gap zone drop targets have string IDs — skip for media drops
+        if (!over || typeof over.id !== 'number') return;
+        if (active.id === over.id) return;
         try {
             await moveItems([active.id], over.id);
-            refreshGrid(); // reload grid to reflect the move
+            refreshGrid();
         } catch (err) {
             console.error('Move failed:', err);
         }
