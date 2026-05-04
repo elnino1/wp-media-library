@@ -1,10 +1,15 @@
 <?php
 class WpmfApiTest extends WP_UnitTestCase {
 
+	public static function setUpBeforeClass(): void {
+		parent::setUpBeforeClass();
+		do_action( 'init' );
+	}
+
 	public function setUp(): void {
 		parent::setUp();
-		// Ensure the init hook fires so that action handlers register themselves
-		do_action( 'init' );
+		// Re-register term meta after WP_UnitTestCase::tearDown() wipes all meta keys
+		WPMF_Taxonomy::register_folder_order_meta();
 	}
 
 	public function test_api_class_exists() {
@@ -78,5 +83,15 @@ class WpmfApiTest extends WP_UnitTestCase {
 
 		$terms = wp_get_object_terms( $attach_id, 'wp_virtual_folder', array( 'fields' => 'ids' ) );
 		$this->assertEmpty( $terms );
+	}
+
+	public function test_delete_nonexistent_folder_returns_404() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$request = new WP_REST_Request( 'DELETE', '/wpmf/v1/folder/999999' );
+		$request->set_url_params( array( 'id' => 999999 ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 404, $response->get_status() );
 	}
 }

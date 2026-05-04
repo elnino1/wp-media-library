@@ -55,6 +55,10 @@ class WPMF_API {
 			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
 		}
 
+		if ( ! current_user_can( 'manage_categories' ) && ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'forbidden', 'You do not have permission to delete folders', array( 'status' => 403 ) );
+		}
+
 		$parent_id = (int) $term->parent;
 
 		// Move all media in this folder to the parent (or root)
@@ -70,13 +74,15 @@ class WPMF_API {
 		}
 
 		// Promote immediate child folders one level up
-		$all_children = get_term_children( $id, 'wp_virtual_folder' );
-		if ( ! is_wp_error( $all_children ) ) {
-			foreach ( $all_children as $child_id ) {
-				$child = get_term( (int) $child_id, 'wp_virtual_folder' );
-				if ( $child && ! is_wp_error( $child ) && (int) $child->parent === $id ) {
-					wp_update_term( (int) $child_id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
-				}
+		$direct_children = get_terms( array(
+			'taxonomy'   => 'wp_virtual_folder',
+			'parent'     => $id,
+			'hide_empty' => false,
+			'fields'     => 'ids',
+		) );
+		if ( ! is_wp_error( $direct_children ) ) {
+			foreach ( $direct_children as $child_id ) {
+				wp_update_term( (int) $child_id, 'wp_virtual_folder', array( 'parent' => $parent_id ) );
 			}
 		}
 

@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPMF_Taxonomy {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_virtual_folder_taxonomy' ) );
+		// Priority 11: taxonomy must be registered at priority 10 before meta can be registered for it
 		add_action( 'init', array( __CLASS__, 'register_folder_order_meta' ), 11 );
 		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_fields' ) );
 	}
