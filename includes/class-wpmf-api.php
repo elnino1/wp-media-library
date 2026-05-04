@@ -184,6 +184,7 @@ class WPMF_API {
 			update_term_meta( $sibling_id, 'wpmf_folder_order', $index * 10 );
 		}
 
-		return rest_ensure_response( array( 'success' => true ) );
+		$updated_term = get_term( $id, 'wp_virtual_folder' );
+		return rest_ensure_response( $updated_term );
 	}
 }

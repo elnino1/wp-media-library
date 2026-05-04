@@ -145,6 +145,8 @@ class WpmfApiTest extends WP_UnitTestCase {
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertEquals( (int) $new_parent['term_id'], (int) $data->parent );
 
 		$updated = get_term( $folder['term_id'], 'wp_virtual_folder' );
 		$this->assertEquals( (int) $new_parent['term_id'], (int) $updated->parent );
