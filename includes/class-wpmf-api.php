@@ -30,7 +30,9 @@ class WPMF_API {
 		register_rest_route( 'wpmf/v1', '/folder/(?P<id>\d+)', array(
 			'methods'             => 'DELETE',
 			'callback'            => array( __CLASS__, 'delete_folder' ),
-			'permission_callback' => array( __CLASS__, 'check_permissions' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_categories' ) || current_user_can( 'manage_options' );
+			},
 			'args'                => array(
 				'id' => array(
 					'required'          => true,
@@ -44,7 +46,9 @@ class WPMF_API {
 		register_rest_route( 'wpmf/v1', '/folder/(?P<id>\d+)/move', array(
 			'methods'             => 'POST',
 			'callback'            => array( __CLASS__, 'move_folder' ),
-			'permission_callback' => array( __CLASS__, 'check_permissions' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_categories' ) || current_user_can( 'manage_options' );
+			},
 			'args'                => array(
 				'id' => array(
 					'required'          => true,
@@ -79,10 +83,6 @@ class WPMF_API {
 
 		if ( is_wp_error( $term ) || ! $term ) {
 			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
-		}
-
-		if ( ! current_user_can( 'manage_categories' ) && ! current_user_can( 'manage_options' ) ) {
-			return new WP_Error( 'forbidden', 'You do not have permission to delete folders', array( 'status' => 403 ) );
 		}
 
 		$parent_id = (int) $term->parent;
@@ -171,12 +171,15 @@ class WPMF_API {
 			return new WP_Error( 'not_found', 'Folder not found', array( 'status' => 404 ) );
 		}
 
-		if ( ! current_user_can( 'manage_categories' ) && ! current_user_can( 'manage_options' ) ) {
-			return new WP_Error( 'forbidden', 'You do not have permission to move folders', array( 'status' => 403 ) );
-		}
-
 		if ( $parent_id === $id ) {
 			return new WP_Error( 'invalid_parent', 'A folder cannot be its own parent.', array( 'status' => 400 ) );
+		}
+
+		if ( $parent_id !== 0 ) {
+			$parent_term = get_term( $parent_id, 'wp_virtual_folder' );
+			if ( is_wp_error( $parent_term ) || ! $parent_term ) {
+				return new WP_Error( 'invalid_parent', 'Target parent folder does not exist.', array( 'status' => 400 ) );
+			}
 		}
 
 		$all_descendants = get_term_children( $id, 'wp_virtual_folder' );
@@ -189,7 +192,12 @@ class WPMF_API {
 			return new WP_Error( 'update_failed', 'Could not move folder.', array( 'status' => 500 ) );
 		}
 
-		foreach ( $sibling_ids as $index => $sibling_id ) {
+		// Only write order meta for terms that are real wp_virtual_folder terms
+		$valid_sibling_ids = array_filter( $sibling_ids, function( $sid ) {
+			$t = get_term( $sid, 'wp_virtual_folder' );
+			return $t && ! is_wp_error( $t );
+		} );
+		foreach ( array_values( $valid_sibling_ids ) as $index => $sibling_id ) {
 			update_term_meta( $sibling_id, 'wpmf_folder_order', $index * 10 );
 		}
 

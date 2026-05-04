@@ -233,4 +233,23 @@ class WpmfApiTest extends WP_UnitTestCase {
 		$updated = get_term( $folder['term_id'], 'wp_virtual_folder' );
 		$this->assertEquals( (int) $dest['term_id'], (int) $updated->parent );
 	}
+
+	public function test_move_folder_rejects_nonexistent_parent() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$folder = wp_insert_term( 'Orphan', 'wp_virtual_folder' );
+
+		// Create and delete a term to get a stale parent ID
+		$temp   = wp_insert_term( 'Temp', 'wp_virtual_folder' );
+		$bad_id = $temp['term_id'];
+		wp_delete_term( $bad_id, 'wp_virtual_folder' );
+
+		$request = new WP_REST_Request( 'POST', '/wpmf/v1/folder/' . $folder['term_id'] . '/move' );
+		$request->set_url_params( array( 'id' => $folder['term_id'] ) );
+		$request->set_param( 'parent_id', $bad_id );
+		$request->set_param( 'sibling_ids', array( $folder['term_id'] ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }
