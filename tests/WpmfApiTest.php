@@ -70,6 +70,27 @@ class WpmfApiTest extends WP_UnitTestCase {
 		$this->assertEquals( (int) $grandparent['term_id'], (int) $updated_child->parent );
 	}
 
+	public function test_delete_folder_does_not_touch_grandchild_folders() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$a = wp_insert_term( 'A', 'wp_virtual_folder' );
+		$b = wp_insert_term( 'B', 'wp_virtual_folder', array( 'parent' => $a['term_id'] ) );
+		$c = wp_insert_term( 'C', 'wp_virtual_folder', array( 'parent' => $b['term_id'] ) );
+		$d = wp_insert_term( 'D', 'wp_virtual_folder', array( 'parent' => $c['term_id'] ) );
+
+		$request = new WP_REST_Request( 'DELETE', '/wpmf/v1/folder/' . $b['term_id'] );
+		$request->set_url_params( array( 'id' => $b['term_id'] ) );
+		rest_get_server()->dispatch( $request );
+
+		// C was the direct child of B — should now be under A
+		$updated_c = get_term( $c['term_id'], 'wp_virtual_folder' );
+		$this->assertEquals( (int) $a['term_id'], (int) $updated_c->parent, 'C should be promoted to A' );
+
+		// D was a grandchild of B — should still be under C, not touched
+		$updated_d = get_term( $d['term_id'], 'wp_virtual_folder' );
+		$this->assertEquals( (int) $c['term_id'], (int) $updated_d->parent, 'D should remain under C' );
+	}
+
 	public function test_delete_folder_moves_media_to_root_when_no_parent() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
