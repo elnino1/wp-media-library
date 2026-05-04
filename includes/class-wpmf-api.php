@@ -86,7 +86,10 @@ class WPMF_API {
 			}
 		}
 
-		wp_delete_term( $id, 'wp_virtual_folder' );
+		$deleted = wp_delete_term( $id, 'wp_virtual_folder' );
+		if ( is_wp_error( $deleted ) || false === $deleted ) {
+			return new WP_Error( 'delete_failed', 'Could not delete folder', array( 'status' => 500 ) );
+		}
 
 		return rest_ensure_response( array( 'success' => true, 'parent_id' => $parent_id ) );
 	}

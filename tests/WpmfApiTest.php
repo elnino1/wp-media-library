@@ -109,10 +109,26 @@ class WpmfApiTest extends WP_UnitTestCase {
 	public function test_delete_nonexistent_folder_returns_404() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
-		$request = new WP_REST_Request( 'DELETE', '/wpmf/v1/folder/999999' );
-		$request->set_url_params( array( 'id' => 999999 ) );
+		$term = wp_insert_term( 'Temp', 'wp_virtual_folder' );
+		$stale_id = $term['term_id'];
+		wp_delete_term( $stale_id, 'wp_virtual_folder' );
+
+		$request = new WP_REST_Request( 'DELETE', '/wpmf/v1/folder/' . $stale_id );
+		$request->set_url_params( array( 'id' => $stale_id ) );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_delete_folder_returns_403_for_subscriber() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+
+		$folder = wp_insert_term( 'Restricted', 'wp_virtual_folder' );
+
+		$request = new WP_REST_Request( 'DELETE', '/wpmf/v1/folder/' . $folder['term_id'] );
+		$request->set_url_params( array( 'id' => $folder['term_id'] ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertContains( $response->get_status(), array( 401, 403 ) );
 	}
 }
