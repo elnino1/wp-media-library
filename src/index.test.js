@@ -133,6 +133,44 @@ describe('App — handleDragEnd guards', () => {
         // Assert
         expect(moveItems).not.toHaveBeenCalled();
     });
+
+    it('does not call moveItems when over.id is an unrecognised string', async () => {
+        await act(async () => { render(<App />); });
+
+        await act(async () => {
+            capturedOnDragEnd({ active: { id: 10 }, over: { id: 'unknown:x' } });
+        });
+
+        expect(moveItems).not.toHaveBeenCalled();
+    });
+});
+
+describe('App — handleDragEnd gap-zone fallback', () => {
+    it('moves item to the parent folder when dropped on a gap zone', async () => {
+        await act(async () => { render(<App />); });
+
+        // Drop on gap zone "gap:7:1" — parent folder is 7
+        await act(async () => {
+            capturedOnDragEnd({ active: { id: 10 }, over: { id: 'gap:7:1' } });
+        });
+
+        await waitFor(() =>
+            expect(moveItems).toHaveBeenCalledWith([10], 7)
+        );
+    });
+
+    it('moves item to root (folder 0) when dropped on a root gap zone', async () => {
+        await act(async () => { render(<App />); });
+
+        // Drop on gap zone "gap:0:0" — parent is root (0)
+        await act(async () => {
+            capturedOnDragEnd({ active: { id: 10 }, over: { id: 'gap:0:0' } });
+        });
+
+        await waitFor(() =>
+            expect(moveItems).toHaveBeenCalledWith([10], 0)
+        );
+    });
 });
 
 describe('App — handleDragEnd success', () => {
