@@ -24,9 +24,9 @@ const MediaItem = ({ item, isSelected = false, onToggleSelect }) => {
     const title = item.title?.rendered || 'Item ' + item.id;
 
     const handleMouseDown = () => { wasDragged.current = false; };
-    const handleClick = () => {
+    const handleClick = (e) => {
         if (wasDragged.current) return;
-        onToggleSelect?.(item.id);
+        onToggleSelect?.(item.id, e.shiftKey);
     };
 
     const style = {

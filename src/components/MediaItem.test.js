@@ -26,7 +26,7 @@ describe('MediaItem — selection', () => {
 
         fireEvent.click(screen.getByTitle('Test Image'));
 
-        expect(onToggleSelect).toHaveBeenCalledWith(1);
+        expect(onToggleSelect).toHaveBeenCalledWith(1, false);
     });
 
     it('calls onToggleSelect again on second click (deselect)', () => {
@@ -39,8 +39,8 @@ describe('MediaItem — selection', () => {
         fireEvent.click(screen.getByTitle('Test Image'));
 
         expect(onToggleSelect).toHaveBeenCalledTimes(2);
-        expect(onToggleSelect).toHaveBeenNthCalledWith(1, 1);
-        expect(onToggleSelect).toHaveBeenNthCalledWith(2, 1);
+        expect(onToggleSelect).toHaveBeenNthCalledWith(1, 1, false);
+        expect(onToggleSelect).toHaveBeenNthCalledWith(2, 1, false);
     });
 
     it('applies selected class and border when isSelected=true', () => {

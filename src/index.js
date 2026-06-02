@@ -85,6 +85,10 @@ export const App = () => {
 
     const clearSelection = useCallback(() => setSelectedItemIds(new Set()), []);
 
+    const selectRange = useCallback((ids) => {
+        setSelectedItemIds(new Set(ids));
+    }, []);
+
     // Clear selection when the user switches folders
     useEffect(() => {
         clearSelection();
@@ -136,6 +140,7 @@ export const App = () => {
                     onRefresh={refreshGrid}
                     selectedItemIds={selectedItemIds}
                     onToggleSelect={toggleSelectItem}
+                    onSelectRange={selectRange}
                 />
                 <Inspector folderId={selectedFolderId} />
             </div>
