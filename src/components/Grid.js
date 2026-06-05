@@ -1,4 +1,4 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 import { getItems } from '../api/client';
 import MediaItem from './MediaItem';
 
@@ -19,17 +19,19 @@ const openWpMediaUploader = (onUploaded) => {
     frame.open();
 };
 
-const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new Set(), onToggleSelect }) => {
+const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new Set(), onToggleSelect, onSelectRange }) => {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [anchorItemId, setAnchorItemId] = useState(null);
 
-    // Reset pagination when folder or refreshKey changes
+    // Reset pagination and selection anchor when folder or refreshKey changes
     useEffect(() => {
         setItems([]);
         setPage(1);
         setHasMore(true);
+        setAnchorItemId(null);
     }, [selectedFolderId, refreshKey]);
 
     const loadItems = async (pageNumber) => {
@@ -46,6 +48,21 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new S
     useEffect(() => {
         loadItems(page);
     }, [page, selectedFolderId, refreshKey]);
+
+    const handleItemClick = useCallback((id, shiftKey) => {
+        if (shiftKey && anchorItemId && onSelectRange) {
+            const anchorIndex = items.findIndex((i) => i.id === anchorItemId);
+            const targetIndex = items.findIndex((i) => i.id === id);
+            if (anchorIndex !== -1 && targetIndex !== -1) {
+                const start = Math.min(anchorIndex, targetIndex);
+                const end = Math.max(anchorIndex, targetIndex);
+                onSelectRange(items.slice(start, end + 1).map((i) => i.id));
+                return;
+            }
+        }
+        setAnchorItemId(id);
+        onToggleSelect?.(id);
+    }, [items, anchorItemId, onToggleSelect, onSelectRange]);
 
     const folderLabel = selectedFolderId ? `Folder #${selectedFolderId}` : 'Inbox (Root)';
 
@@ -69,7 +86,7 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new S
                         key={item.id}
                         item={item}
                         isSelected={selectedItemIds.has(item.id)}
-                        onToggleSelect={onToggleSelect}
+                        onToggleSelect={handleItemClick}
                     />
                 ))}
             </div>

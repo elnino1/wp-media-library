@@ -223,6 +223,7 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState(null);
     const [isDraggingFolderId, setIsDraggingFolderId] = useState(null);
+    const [isAnyDragActive, setIsAnyDragActive] = useState(false);
     const inputRef = useRef(null);
     const foldersRef = useRef(folders);
     useEffect(() => { foldersRef.current = folders; }, [folders]);
@@ -310,11 +311,17 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
 
     useDndMonitor({
         onDragStart({ active }) {
+            setIsAnyDragActive(true);
             if (active.data?.current?.type === 'folder') {
                 setIsDraggingFolderId(active.id);
             }
         },
+        onDragCancel() {
+            setIsAnyDragActive(false);
+            setIsDraggingFolderId(null);
+        },
         onDragEnd({ active, over }) {
+            setIsAnyDragActive(false);
             setIsDraggingFolderId(null);
             if (active.data?.current?.type !== 'folder') return;
             if (!over) return;
@@ -389,7 +396,7 @@ const Sidebar = ({ selectedFolderId, onSelectFolder }) => {
                 onCancelDelete={() => { setConfirmDeleteId(null); setDeleteError(null); }}
                 deleting={deleting}
                 deleteError={deleteError}
-                isDraggingAny={!!isDraggingFolderId}
+                isDraggingAny={isAnyDragActive}
                 parentId={0}
             />
 
