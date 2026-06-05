@@ -108,14 +108,25 @@ export const App = () => {
         setActiveItem(null);
         // Folder drags are handled by Sidebar's useDndMonitor
         if (active.data?.current?.type === 'folder') return;
-        // Gap zone drop targets have string IDs — skip for media drops
-        if (!over || typeof over.id !== 'number') return;
-        if (active.id === over.id) return;
+        if (!over) return;
+
+        // Resolve the target folder ID.
+        // Gap zone IDs are strings like "gap:parentFolderId:position" — use the parent folder.
+        let folderId;
+        if (typeof over.id === 'number') {
+            folderId = over.id;
+        } else if (typeof over.id === 'string' && over.id.startsWith('gap:')) {
+            folderId = Number(over.id.split(':')[1]);
+        } else {
+            return;
+        }
+
+        if (active.id === folderId) return;
         try {
             const idsToMove = selectedItemIds.has(active.id)
                 ? [...selectedItemIds]
                 : [active.id];
-            await moveItems(idsToMove, over.id);
+            await moveItems(idsToMove, folderId);
             clearSelection();
             refreshGrid();
         } catch (err) {

@@ -24,12 +24,12 @@ const FolderItem = ({
                     borderRadius: '3px',
                     fontWeight: isSelected ? '600' : 'normal',
                     opacity: isDragging ? 0.4 : 1,
-                    background: isOver && isDraggingAny
+                    background: isOver
                         ? '#e8f4fb'
                         : isSelected
                         ? '#f0f6fc'
                         : 'transparent',
-                    border: isOver && isDraggingAny ? '1px dashed #007cba' : '1px solid transparent',
+                    border: isOver ? '1px dashed #007cba' : '1px solid transparent',
                     transition: 'background 0.1s',
                 }}
             >
