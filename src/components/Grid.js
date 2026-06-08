@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { getItems } from '../api/client';
+import { getItems, moveItems } from '../api/client';
 import MediaItem from './MediaItem';
 
-// Opens the native WordPress media uploader
-const openWpMediaUploader = (onUploaded) => {
+// Opens the native WordPress media uploader and moves uploaded items into folderId (if set)
+const openWpMediaUploader = (folderId, onUploaded) => {
     if (!window.wp || !window.wp.media) {
         console.warn('wp.media not available');
         return;
@@ -13,8 +13,19 @@ const openWpMediaUploader = (onUploaded) => {
         button: { text: 'Use this media' },
         multiple: true,
     });
-    frame.on('select', () => {
-        onUploaded(); // refresh grid after selection/upload
+    frame.on('select', async () => {
+        if (folderId) {
+            const selection = frame.state().get('selection');
+            const ids = selection.map((attachment) => attachment.id);
+            if (ids.length > 0) {
+                try {
+                    await moveItems(ids, folderId);
+                } catch (err) {
+                    console.error('Failed to move uploaded media to folder:', err);
+                }
+            }
+        }
+        onUploaded();
     });
     frame.open();
 };
@@ -73,7 +84,7 @@ const Grid = ({ selectedFolderId, refreshKey, onRefresh, selectedItemIds = new S
                 <div className="toolbar-actions">
                     <button
                         className="components-button is-primary"
-                        onClick={() => openWpMediaUploader(onRefresh)}
+                        onClick={() => openWpMediaUploader(selectedFolderId, onRefresh)}
                     >
                         Upload Item
                     </button>
