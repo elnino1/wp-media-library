@@ -7,6 +7,7 @@
     "build": "wp-scripts build",
     "start": "wp-scripts start",
     "package": "wp-scripts plugin-zip",
+    "pack": "bash scripts/pack.sh",
     "test:unit": "wp-scripts test-unit-js",
     "test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/wp-media-library ./vendor/bin/phpunit",
     "env:start": "wp-env start",

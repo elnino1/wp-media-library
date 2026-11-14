@@ -22,7 +22,9 @@ class WPMF_API {
 				),
 				'folder_id' => array(
 					'required'          => true,
-					'validate_callback' => 'is_numeric'
+					'validate_callback' => function( $param ) {
+						return is_numeric( $param );
+					},
 				),
 			),
 		) );
